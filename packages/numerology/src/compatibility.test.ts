@@ -19,30 +19,64 @@ describe('compatibility', () => {
   it('same life path scores high', () => {
     expect(compatibility(him, him).harmony).toBe('high');
   });
-  it('covers harmony low, medium, and high bands', () => {
-    // Test various profiles to ensure harmony band logic is fully exercised
-    const profiles = [
-      computeProfile({ fullName: 'Alice', script: 'latin', dob: '1980-01-01' }),
-      computeProfile({ fullName: 'Bob', script: 'latin', dob: '1985-06-15' }),
-      computeProfile({ fullName: 'Carol', script: 'latin', dob: '1990-03-03' }),
-      computeProfile({ fullName: 'David', script: 'latin', dob: '1991-05-05' }),
-      computeProfile({ fullName: 'Eve', script: 'latin', dob: '1992-07-07' }),
-    ];
+  it('handles zero-valued numbers (neutral affinity)', () => {
+    const bryn = computeProfile({ fullName: 'Bryn', script: 'latin', dob: '1990-07-15' });
+    const result = compatibility(bryn, him);
+    expect(result.score).toBeGreaterThanOrEqual(0);
+    expect(result.score).toBeLessThanOrEqual(100);
+    expect(['high', 'medium', 'low']).toContain(result.harmony);
+  });
 
-    // Test all combinations to ensure we hit all harmony bands
-    for (let i = 0; i < profiles.length; i++) {
-      for (let j = i + 1; j < profiles.length; j++) {
-        const pi = profiles[i];
-        const pj = profiles[j];
-        if (pi && pj) {
-          const result = compatibility(pi, pj);
-          expect(['high', 'medium', 'low']).toContain(result.harmony);
-        }
-      }
-    }
+  it('assigns harmony bands correctly with explicit scores', () => {
+    // Low harmony: affinities 1/1/1 → score 33 → 'low'
+    const lowA: typeof her = {
+      lifePath: 1,
+      expression: 2,
+      soulUrge: 2,
+      personality: 1,
+      birthday: 1,
+      methodId: 'default',
+      engineVersion: 'default-0.1.0',
+    };
+    const lowB: typeof her = {
+      lifePath: 2,
+      expression: 1,
+      soulUrge: 1,
+      personality: 2,
+      birthday: 2,
+      methodId: 'default',
+      engineVersion: 'default-0.1.0',
+    };
+    const lowResult = compatibility(lowA, lowB);
+    expect(lowResult.score).toBe(33);
+    expect(lowResult.harmony).toBe('low');
 
-    // At least verify the harmony assignment logic is working
-    const r1 = compatibility(her, him);
-    expect(['high', 'medium', 'low']).toContain(r1.harmony);
+    // Medium harmony: affinities 2/2/2 → score 67 → 'medium'
+    const medA: typeof her = {
+      lifePath: 1,
+      expression: 1,
+      soulUrge: 1,
+      personality: 1,
+      birthday: 1,
+      methodId: 'default',
+      engineVersion: 'default-0.1.0',
+    };
+    const medB: typeof her = {
+      lifePath: 7,
+      expression: 7,
+      soulUrge: 7,
+      personality: 7,
+      birthday: 7,
+      methodId: 'default',
+      engineVersion: 'default-0.1.0',
+    };
+    const medResult = compatibility(medA, medB);
+    expect(medResult.score).toBe(67);
+    expect(medResult.harmony).toBe('medium');
+
+    // High harmony: same profile vs itself → affinities 3/3/3 → score 100 → 'high'
+    const highResult = compatibility(him, him);
+    expect(highResult.score).toBe(100);
+    expect(highResult.harmony).toBe('high');
   });
 });

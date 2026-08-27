@@ -28,12 +28,17 @@ function single(n: number): number {
   return reduce(n, []);
 }
 
+function affinity(a: number, b: number): number {
+  const x = single(a);
+  const y = single(b);
+  if (x < 1 || x > 9 || y < 1 || y > 9) return 2; // no signal → neutral
+  return AFFINITY[x - 1]![y - 1]!;
+}
+
 export function compatibility(a: NumerologyProfile, b: NumerologyProfile): Compatibility {
-  const la = single(a.lifePath);
-  const lb = single(b.lifePath);
-  const lifeAffinity = AFFINITY[la - 1]![lb - 1]!; // 0..3
-  const soulAffinity = AFFINITY[single(a.soulUrge) - 1]![single(b.soulUrge) - 1]!;
-  const exprAffinity = AFFINITY[single(a.expression) - 1]![single(b.expression) - 1]!;
+  const lifeAffinity = affinity(a.lifePath, b.lifePath); // 0..3
+  const soulAffinity = affinity(a.soulUrge, b.soulUrge);
+  const exprAffinity = affinity(a.expression, b.expression);
   const raw = lifeAffinity * 0.5 + soulAffinity * 0.3 + exprAffinity * 0.2; // 0..3
   const score = Math.round((raw / 3) * 100);
   const harmony = score >= 70 ? 'high' : score >= 45 ? 'medium' : 'low';
