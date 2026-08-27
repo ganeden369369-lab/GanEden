@@ -1,4 +1,4 @@
-import { Redirect, type Href } from 'expo-router';
+import { Redirect } from 'expo-router';
 import { ActivityIndicator, View } from 'react-native';
 import { Button, Screen, Text, tokens } from '../src/ui';
 import { useProfile } from '../src/features/profile/useProfile';
@@ -31,7 +31,6 @@ export default function Index() {
       </Screen>
     );
   }
-  // (onboarding) and (tabs) route groups don't exist yet — added in Tasks 10-14.
-  if (!profile.data) return <Redirect href={'/(onboarding)/language' as Href} />;
-  return <Redirect href={'/(tabs)/home' as Href} />;
+  if (!profile.data) return <Redirect href="/(onboarding)/language" />;
+  return <Redirect href="/(tabs)/home" />;
 }

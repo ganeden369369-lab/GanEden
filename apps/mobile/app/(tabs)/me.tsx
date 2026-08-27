@@ -1,0 +1,34 @@
+import { router } from 'expo-router';
+import { View } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { Button, Choice, Screen, Text, tokens } from '../../src/ui';
+import { setLanguage, useT } from '../../src/lib/i18n';
+import { supabase } from '../../src/lib/supabase';
+
+export default function Me() {
+  const t = useT();
+  const { i18n } = useTranslation();
+  const lang = i18n.language;
+  return (
+    <Screen>
+      <Text variant="title" tone="accent" style={{ marginBottom: tokens.space.xl }}>
+        {t('tabs.me')}
+      </Text>
+      <Text variant="caption" tone="muted" style={{ marginBottom: tokens.space.sm }}>
+        {t('me.language')}
+      </Text>
+      <Choice label={t('onboarding.language.he')} selected={lang === 'he'} onPress={() => setLanguage('he')} />
+      <Choice label={t('onboarding.language.en')} selected={lang === 'en'} onPress={() => setLanguage('en')} />
+      <View style={{ flex: 1 }} />
+      <Button
+        variant="ghost"
+        title={t('me.signOut')}
+        testID="sign-out"
+        onPress={async () => {
+          await supabase.auth.signOut();
+          router.replace('/');
+        }}
+      />
+    </Screen>
+  );
+}

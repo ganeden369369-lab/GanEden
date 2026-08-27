@@ -1,4 +1,4 @@
-import { Redirect, router, type Href } from 'expo-router';
+import { Redirect, router } from 'expo-router';
 import { ActivityIndicator, View } from 'react-native';
 import type { NumerologyProfile } from '@gan-eden/numerology';
 import { Button, NumberBadge, Screen, Text, tokens } from '../../src/ui';
@@ -33,7 +33,7 @@ export default function Reveal() {
       </Screen>
     );
   }
-  if (!profile) return <Redirect href={'/(onboarding)/language' as Href} />;
+  if (!profile) return <Redirect href="/(onboarding)/language" />;
 
   const numbers = profile.numbers as unknown as NumerologyProfile;
   const firstName = profile.full_name.split(' ')[0];
@@ -64,7 +64,7 @@ export default function Reveal() {
         testID="enter"
         onPress={() => {
           reset();
-          router.replace('/(tabs)/home' as Href);
+          router.replace('/(tabs)/home');
         }}
       />
     </Screen>
