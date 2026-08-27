@@ -184,6 +184,22 @@ importers:
         specifier: ^2.0.0
         version: 2.1.9(@types/node@26.4.0)(jsdom@20.0.3)(lightningcss@1.33.0)(terser@5.51.2)
 
+  packages/prompts:
+    dependencies:
+      '@gan-eden/shared':
+        specifier: workspace:*
+        version: link:../shared
+      zod:
+        specifier: ^3.23.0
+        version: 3.25.76
+    devDependencies:
+      typescript:
+        specifier: ^5.6.0
+        version: 5.9.3
+      vitest:
+        specifier: ^2.0.0
+        version: 2.1.9(@types/node@26.4.0)(jsdom@20.0.3)(lightningcss@1.33.0)(terser@5.51.2)
+
   packages/shared:
     dependencies:
       zod:
