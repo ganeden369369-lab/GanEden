@@ -1,5 +1,5 @@
-import { router, type Href } from 'expo-router';
-import { View } from 'react-native';
+import { Redirect, router, type Href } from 'expo-router';
+import { ActivityIndicator, View } from 'react-native';
 import type { NumerologyProfile } from '@gan-eden/numerology';
 import { Button, NumberBadge, Screen, Text, tokens } from '../../src/ui';
 import { useProfile } from '../../src/features/profile/useProfile';
@@ -21,9 +21,20 @@ const I18N_KEY: Record<NumberKey, string> = {
 export default function Reveal() {
   const t = useT();
   const { session } = useSession();
-  const { data: profile } = useProfile(session?.user.id);
+  const { data: profile, isLoading, isFetching } = useProfile(session?.user.id);
   const reset = useOnboarding((s) => s.reset);
-  if (!profile) return null;
+
+  if (isLoading || isFetching) {
+    return (
+      <Screen scroll={false}>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <ActivityIndicator color={tokens.color.accent} />
+        </View>
+      </Screen>
+    );
+  }
+  if (!profile) return <Redirect href={'/(onboarding)/language' as Href} />;
+
   const numbers = profile.numbers as unknown as NumerologyProfile;
   const firstName = profile.full_name.split(' ')[0];
   return (

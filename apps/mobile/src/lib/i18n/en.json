@@ -15,7 +15,8 @@
       "title": "Let’s begin with you",
       "hint": "Your numbers are born from your full name and your birthday",
       "nameLabel": "Full name, as on your ID",
-      "dobLabel": "Date of birth"
+      "dobLabel": "Date of birth",
+      "dobInvalid": "Please enter a valid date, at least 18 years ago"
     },
     "status": {
       "title": "Where are you in love right now?",
