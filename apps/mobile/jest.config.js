@@ -2,6 +2,7 @@ const jestExpoPreset = require('jest-expo/jest-preset');
 
 module.exports = {
   preset: 'jest-expo',
+  setupFiles: ['./jest.setup.js'],
   transformIgnorePatterns: [
     // Our own allow-list (adds nativewind/css-interop on top of jest-expo's defaults, which
     // already prefix-match react-native-* and expo-* packages).
