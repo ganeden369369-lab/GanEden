@@ -1,4 +1,4 @@
-﻿import type { Method, Script } from './method';
+import type { Method, Script } from './method';
 import { DEFAULT_METHOD } from './methods/default';
 
 const HEBREW_FINALS: Record<string, string> = { ך: 'כ', ם: 'מ', ן: 'נ', ף: 'פ', ץ: 'צ' };
@@ -7,14 +7,14 @@ export function normalizeName(name: string, script: Script): string {
   if (script === 'latin') {
     return name
       .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '') // strip accents
+      .replace(/[̀-ͯ]/g, '') // strip accents
       .toLowerCase()
       .replace(/[^a-z]/g, '');
   }
   return name
-    .replace(/[\u0591-\u05C7]/g, '') // niqqud + cantillation
+    .replace(/[֑-ׇ]/g, '') // niqqud + cantillation
     .replace(/[ךםןףץ]/g, (c) => HEBREW_FINALS[c] ?? c)
-    .replace(/[^\u05D0-\u05EA]/g, '');
+    .replace(/[^א-ת]/g, '');
 }
 
 export interface NameSums {
