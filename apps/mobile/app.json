@@ -29,10 +29,15 @@
           "backgroundColor": "#FFF7F4"
         }
       ],
-      "expo-localization"
+      "expo-localization",
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single"
     }
   }
 }

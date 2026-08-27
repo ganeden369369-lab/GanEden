@@ -1,0 +1,27 @@
+export const tokens = {
+  color: {
+    surface: '#FFF7F4',
+    surfaceRaised: '#FFFFFF',
+    surfaceTint: '#F6E3DF',
+    border: '#EFCFC9',
+    accent: '#8E5E4E',
+    accentSoft: '#B98577',
+    accentGlow: '#E3B4B0',
+    textPrimary: '#2B1E1B',
+    textSecondary: '#3E2A25',
+    textMuted: '#8A7470',
+    textInverse: '#FFFFFF',
+    danger: '#B4443C',
+  },
+  gradient: { accent: ['#8E5E4E', '#B98577', '#E3B4B0'] as const },
+  font: {
+    display: { en: 'CormorantGaramond_500Medium', he: 'FrankRuhlLibre_500Medium' },
+    body: 'Heebo_400Regular',
+    bodyBold: 'Heebo_600SemiBold',
+  },
+  size: { display: 40, title: 28, heading: 20, body: 16, caption: 13 },
+  space: { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32, xxxl: 48 },
+  radius: { card: 24, field: 16, pill: 999 },
+  shadow: { card: { shadowColor: '#8E5E4E', shadowOpacity: 0.08, shadowRadius: 16, shadowOffset: { width: 0, height: 6 }, elevation: 3 } },
+  motion: { fast: 150, base: 250, reveal: 600 },
+} as const;
