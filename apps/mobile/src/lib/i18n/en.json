@@ -11,8 +11,12 @@
   },
   "onboarding": {
     "language": { "title": "Choose your language", "he": "עברית", "en": "English" },
-    "name": { "title": "What's your full name?", "hint": "As written on your ID — your numbers come from it", "placeholder": "Full name" },
-    "birthday": { "title": "When were you born?" },
+    "about": {
+      "title": "Let’s begin with you",
+      "hint": "Your numbers are born from your full name and your birthday",
+      "nameLabel": "Full name, as on your ID",
+      "dobLabel": "Date of birth"
+    },
     "status": {
       "title": "Where are you in love right now?",
       "single": "Single", "dating": "Dating", "relationship": "In a relationship", "married": "Married"
