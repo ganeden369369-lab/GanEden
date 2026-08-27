@@ -1,0 +1,19 @@
+{
+  "expo": {
+    "name": "Gan Eden",
+    "slug": "gan-eden",
+    "scheme": "ganeden",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "../../assets/icon/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": { "image": "../../assets/icon/splash-icon.png", "resizeMode": "contain", "backgroundColor": "#FFF7F4" },
+    "ios": { "supportsTablet": false, "bundleIdentifier": "co.ganeden.app" },
+    "android": {
+      "package": "co.ganeden.app",
+      "adaptiveIcon": { "foregroundImage": "../../assets/icon/adaptive-icon-foreground.png", "backgroundColor": "#F6E3DF" }
+    },
+    "plugins": ["expo-router"],
+    "experiments": { "typedRoutes": true }
+  }
+}
