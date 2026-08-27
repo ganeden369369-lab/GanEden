@@ -7,13 +7,15 @@
     "orientation": "portrait",
     "icon": "../../assets/icon/icon.png",
     "userInterfaceStyle": "light",
-    "splash": { "image": "../../assets/icon/splash-icon.png", "resizeMode": "contain", "backgroundColor": "#FFF7F4" },
     "ios": { "supportsTablet": false, "bundleIdentifier": "co.ganeden.app" },
     "android": {
       "package": "co.ganeden.app",
       "adaptiveIcon": { "foregroundImage": "../../assets/icon/adaptive-icon-foreground.png", "backgroundColor": "#F6E3DF" }
     },
-    "plugins": ["expo-router"],
+    "plugins": [
+      "expo-router",
+      ["expo-splash-screen", { "image": "../../assets/icon/splash-icon.png", "imageWidth": 200, "resizeMode": "contain", "backgroundColor": "#FFF7F4" }]
+    ],
     "experiments": { "typedRoutes": true }
   }
 }
