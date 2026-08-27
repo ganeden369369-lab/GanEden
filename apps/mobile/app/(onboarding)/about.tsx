@@ -4,15 +4,11 @@ import { useState } from 'react';
 import { Platform, View } from 'react-native';
 import { Field, StepFrame, Text, tokens } from '../../src/ui';
 import { useT } from '../../src/lib/i18n';
+import { toIso } from '../../src/lib/dates';
 import { useOnboarding } from '../../src/store/onboarding';
 
 const HEBREW = /[א-ת]/;
 const DOB_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
-
-function toIso(d: Date): string {
-  const p = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
-}
 
 function defaultDob(): Date {
   return new Date(1995, 0, 1);

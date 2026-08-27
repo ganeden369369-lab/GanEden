@@ -95,6 +95,8 @@ create table public.daily_quotes (
 alter table public.daily_quotes enable row level security;
 create policy "own quotes read" on public.daily_quotes for select using (auth.uid() = user_id);
 create policy "own quotes mark shared" on public.daily_quotes for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+revoke update on public.daily_quotes from authenticated;
+grant update (shared_at) on public.daily_quotes to authenticated;
 
 create table public.quote_fallbacks (
   id serial primary key,
@@ -226,7 +228,7 @@ grant execute on function public.check_and_increment_usage(uuid) to service_role
 -- Today's quote or a fallback in the user's language.
 create or replace function public.today_quote(p_user uuid)
 returns table (text text, theme text, is_fallback boolean)
-language sql security definer set search_path = public stable as $$
+language sql security definer set search_path = public volatile as $$
   select * from (
     select q.text, q.theme, false as is_fallback from public.daily_quotes q where q.user_id = p_user and p_user = auth.uid() and q.for_date = current_date
     union all

@@ -37,6 +37,7 @@ export default function Calculating() {
   }
 
   useEffect(() => {
+    active.current = true;
     run();
     return () => {
       active.current = false;

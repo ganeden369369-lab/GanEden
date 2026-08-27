@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -7,6 +8,7 @@ import { supabase } from '../../src/lib/supabase';
 
 export default function Me() {
   const t = useT();
+  const qc = useQueryClient();
   const { i18n } = useTranslation();
   const lang = i18n.language;
   return (
@@ -26,6 +28,7 @@ export default function Me() {
         testID="sign-out"
         onPress={async () => {
           await supabase.auth.signOut();
+          qc.clear();
           router.replace('/');
         }}
       />

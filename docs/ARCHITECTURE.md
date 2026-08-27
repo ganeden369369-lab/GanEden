@@ -107,7 +107,7 @@ Tooling: pnpm workspaces, TypeScript strict everywhere, ESLint + Prettier, Husky
 ```
 app/
 ├── (auth)/welcome.tsx
-├── (onboarding)/language | name | birthday | status | goals | calculating | reveal | notifications
+├── (onboarding)/language | about | status | goals | calculating | reveal | notifications
 ├── (tabs)/
 │   ├── home.tsx              today's quote card, share, greeting, personal day, "Ask Eden"
 │   ├── chat/index.tsx        chat list
