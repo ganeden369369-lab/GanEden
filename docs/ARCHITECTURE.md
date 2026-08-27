@@ -20,7 +20,7 @@
 | D9 | Chat deletion | **Does not touch memory** | Memory facts have no cascade from chats |
 | D10 | Engine inputs | **Full name + date of birth** (per the Mentor's method) | Exact rules pending working session with the Mentor |
 | D11 | Navigation | 4 tabs: Home / Chat / Numbers / Me | |
-| D12 | Styling | NativeWind v4 + design tokens | |
+| D12 | Styling | Inline styles + design tokens (`src/ui/tokens.ts`); no CSS-in-JS | |
 | D13 | Payments | Out of v1; `entitlements` table + RevenueCat in P1 | |
 
 ---
@@ -88,7 +88,7 @@ Tooling: pnpm workspaces, TypeScript strict everywhere, ESLint + Prettier, Husky
 |---|---|
 | Runtime | Expo SDK (latest stable), **Expo Go for v1** (no custom native modules — see D7); the Expo web target (`expo start --web`) is also enabled, for visual review only — not a release target |
 | Navigation | Expo Router (file-based, typed routes) |
-| Styling | NativeWind v4; tokens in `src/lib/theme.ts` (colors from the brand: rose-gold gradient accent, blush surfaces, cream backgrounds; dark = plum/mocha) |
+| Styling | Inline styles from `src/ui/tokens.ts` via the design-system primitives in `src/ui`; NativeWind removed in Phase 2 (unused) (colors from the brand: rose-gold gradient accent, blush surfaces, cream backgrounds; dark = plum/mocha) |
 | Motion | `react-native-reanimated` + `react-native-gesture-handler` (both in Expo Go) |
 | Server state | TanStack Query wrapping `supabase-js`; optimistic updates for chat |
 | Local state | Zustand (onboarding draft, UI prefs) |

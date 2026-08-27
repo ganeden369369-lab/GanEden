@@ -17,7 +17,7 @@ export default tseslint.config(
   },
   {
     // CommonJS tooling config files (Node-executed, not bundled by Metro/Babel).
-    files: ['**/*.config.js', 'apps/mobile/src/lib/theme.js', 'apps/mobile/jest.setup.js'],
+    files: ['**/*.config.js', 'apps/mobile/jest.setup.js'],
     languageOptions: {
       globals: {
         module: 'writable',
