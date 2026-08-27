@@ -15,39 +15,42 @@ function deviceLanguage(): Language {
   return code === 'he' ? 'he' : 'en';
 }
 
+let appliedRtl: boolean = I18nManager.isRTL; // native state at JS load
+
 export async function initI18n(): Promise<Language> {
-  const stored = (await AsyncStorage.getItem(STORAGE_KEY)) as Language | null;
-  const lang = stored ?? deviceLanguage();
+  const stored = await AsyncStorage.getItem(STORAGE_KEY);
+  const lang: Language = stored === 'he' || stored === 'en' ? stored : deviceLanguage();
   await i18next.use(initReactI18next).init({
     resources: { en: { translation: en }, he: { translation: he } },
     lng: lang,
     fallbackLng: 'en',
     interpolation: { escapeValue: false },
   });
-  applyDirection(lang);
+  if (applyDirection(lang)) await reloadIfPossible();
   return lang;
 }
 
 function applyDirection(lang: Language): boolean {
   const rtl = lang === 'he';
   I18nManager.allowRTL(rtl);
-  if (I18nManager.isRTL !== rtl) {
-    I18nManager.forceRTL(rtl);
-    return true; // direction changed → needs reload
+  if (appliedRtl === rtl) return false;
+  I18nManager.forceRTL(rtl);
+  appliedRtl = rtl;
+  return true; // direction changed → native reload needed
+}
+
+async function reloadIfPossible(): Promise<void> {
+  try {
+    await Updates.reloadAsync();
+  } catch {
+    // Expo Go cannot reload programmatically; the user reloads manually. Direction applies on next launch.
   }
-  return false;
 }
 
 export async function setLanguage(lang: Language): Promise<void> {
   await AsyncStorage.setItem(STORAGE_KEY, lang);
   await i18next.changeLanguage(lang);
-  if (applyDirection(lang)) {
-    try {
-      await Updates.reloadAsync();
-    } catch {
-      // In Expo Go dev, reloadAsync may be unavailable — the user can reload manually.
-    }
-  }
+  if (applyDirection(lang)) await reloadIfPossible();
 }
 
 export function currentLanguage(): Language {
