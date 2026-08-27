@@ -1,0 +1,154 @@
+{
+  "pages": [
+    {
+      "id": "en",
+      "name": "English"
+    },
+    {
+      "id": "he",
+      "name": "Hebrew (RTL)"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "SignIn.dc.html",
+      "title": "Welcome · EN",
+      "x": 60,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "en"
+    },
+    {
+      "file": "About.dc.html",
+      "title": "About · EN",
+      "x": 540,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "en"
+    },
+    {
+      "file": "Goals.dc.html",
+      "title": "Goals · EN",
+      "x": 1020,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "en"
+    },
+    {
+      "file": "Calculating.dc.html",
+      "title": "Calculating · EN",
+      "x": 1500,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "en"
+    },
+    {
+      "file": "Reveal.dc.html",
+      "title": "Reveal · EN",
+      "x": 1980,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "en"
+    },
+    {
+      "file": "Main.dc.html",
+      "title": "Home · EN",
+      "x": 2460,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "en"
+    },
+    {
+      "file": "Chat.dc.html",
+      "title": "Chat · EN",
+      "x": 2940,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "en"
+    },
+    {
+      "file": "SignInHE.dc.html",
+      "title": "Welcome · HE",
+      "x": 60,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "he"
+    },
+    {
+      "file": "AboutHE.dc.html",
+      "title": "About · HE",
+      "x": 540,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "he"
+    },
+    {
+      "file": "GoalsHE.dc.html",
+      "title": "Goals · HE",
+      "x": 1020,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "he"
+    },
+    {
+      "file": "CalculatingHE.dc.html",
+      "title": "Calculating · HE",
+      "x": 1500,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "he"
+    },
+    {
+      "file": "RevealHE.dc.html",
+      "title": "Reveal · HE",
+      "x": 1980,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "he"
+    },
+    {
+      "file": "HomeHE.dc.html",
+      "title": "Home · HE",
+      "x": 2460,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "he"
+    },
+    {
+      "file": "ChatHE.dc.html",
+      "title": "Chat · HE",
+      "x": 2940,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "he"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "direction",
+      "x": 60,
+      "y": -200,
+      "w": 520,
+      "page": "en",
+      "text": "Gan Eden — quiet luxury direction\nCream #FFF7F4 · rose-gold #8E5E4E→#E3B4B0 · display serif (Cormorant / Frank Ruhl Libre) · body Heebo\nPage 1 English, page 2 Hebrew (RTL) — switch from the pages menu. Real status bar / keyboard are not drawn."
+    }
+  ],
+  "launch": {
+    "view": "canvas",
+    "page": "en"
+  }
+}
