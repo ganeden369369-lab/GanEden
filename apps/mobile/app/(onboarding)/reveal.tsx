@@ -1,6 +1,6 @@
 import { Redirect, router } from 'expo-router';
 import { ActivityIndicator, View } from 'react-native';
-import { NUMBER_I18N, NUMBER_KEYS, parseNumbers } from '@gan-eden/shared';
+import { NUMBER_I18N, NUMBER_KEYS, safeParseNumbers } from '@gan-eden/shared';
 import { Button, NumberBadge, Screen, Text, tokens } from '../../src/ui';
 import { useProfile } from '../../src/features/profile/useProfile';
 import { useT } from '../../src/lib/i18n';
@@ -26,7 +26,19 @@ export default function Reveal() {
   }
   if (!profile) return <Redirect href="/(onboarding)/language" />;
 
-  const numbers = parseNumbers(profile.numbers);
+  const numbers = safeParseNumbers(profile.numbers);
+  if (!numbers) {
+    return (
+      <Screen scroll={false}>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: tokens.space.lg, paddingHorizontal: tokens.space.xl }}>
+          <Text tone="muted" align="center">
+            {t('common.loadError')}
+          </Text>
+          <Button title={t('onboarding.reveal.recompute')} onPress={() => router.replace('/(onboarding)/language')} />
+        </View>
+      </Screen>
+    );
+  }
   const firstName = profile.full_name.split(' ')[0];
   return (
     <Screen>

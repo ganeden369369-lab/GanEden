@@ -33,7 +33,7 @@
       "confidence": "ביטחון וערך עצמי"
     },
     "calculating": { "title": "קוראת את המספרים שלך…" },
-    "reveal": { "title": "המספרים שלך, {{name}}", "cta": "להיכנס לגן" }
+    "reveal": { "title": "המספרים שלך, {{name}}", "cta": "להיכנס לגן", "recompute": "לחשב מחדש את המספרים שלי" }
   },
   "numbers": {
     "life_path": "מספר נתיב החיים", "expression": "מספר הביטוי", "soul_urge": "מספר הנשמה",

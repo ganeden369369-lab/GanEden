@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { NUMBER_I18N, NUMBER_KEYS, NumerologyProfileSchema, parseNumbers } from './numbers';
+import { NUMBER_I18N, NUMBER_KEYS, NumerologyProfileSchema, parseNumbers, safeParseNumbers } from './numbers';
 
 const valid = {
   lifePath: 7,
@@ -24,6 +24,18 @@ describe('parseNumbers', () => {
 
   it('rejects a negative number', () => {
     expect(() => parseNumbers({ ...valid, lifePath: -1 })).toThrow();
+  });
+});
+
+describe('safeParseNumbers', () => {
+  it('returns the parsed profile on valid input', () => {
+    expect(safeParseNumbers(valid)).toEqual(valid);
+  });
+
+  it('returns null on invalid input instead of throwing', () => {
+    expect(safeParseNumbers({ ...valid, lifePath: -1 })).toBeNull();
+    expect(safeParseNumbers(null)).toBeNull();
+    expect(safeParseNumbers(undefined)).toBeNull();
   });
 });
 

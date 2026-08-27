@@ -1,6 +1,7 @@
 import { View } from 'react-native';
-import { NUMBER_I18N, NUMBER_KEYS, parseNumbers, type Language } from '@gan-eden/shared';
-import { Card, NumberBadge, Screen, Text, tokens } from '../../src/ui';
+import { router } from 'expo-router';
+import { NUMBER_I18N, NUMBER_KEYS, safeParseNumbers, type Language } from '@gan-eden/shared';
+import { Button, Card, NumberBadge, Screen, Text, tokens } from '../../src/ui';
 import { useMeanings } from '../../src/features/profile/useMeanings';
 import { useProfile } from '../../src/features/profile/useProfile';
 import { useT } from '../../src/lib/i18n';
@@ -14,7 +15,19 @@ export default function Numbers() {
   const { data: profile } = useProfile(session?.user.id);
   const meanings = useMeanings((profile?.language as Language) ?? 'en');
   if (!profile) return null;
-  const numbers = parseNumbers(profile.numbers);
+  const numbers = safeParseNumbers(profile.numbers);
+  if (!numbers) {
+    return (
+      <Screen scroll={false}>
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', gap: tokens.space.lg, paddingHorizontal: tokens.space.xl }}>
+          <Text tone="muted" align="center">
+            {t('common.loadError')}
+          </Text>
+          <Button title={t('onboarding.reveal.recompute')} onPress={() => router.replace('/(onboarding)/language')} />
+        </View>
+      </Screen>
+    );
+  }
   return (
     <Screen>
       <Text variant="title" tone="accent" style={{ marginBottom: tokens.space.xl }}>

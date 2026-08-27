@@ -25,3 +25,8 @@ export type NumerologyProfile = z.infer<typeof NumerologyProfileSchema>;
 export function parseNumbers(json: unknown): NumerologyProfile {
   return NumerologyProfileSchema.parse(json);
 }
+
+export function safeParseNumbers(json: unknown): NumerologyProfile | null {
+  const result = NumerologyProfileSchema.safeParse(json);
+  return result.success ? result.data : null;
+}

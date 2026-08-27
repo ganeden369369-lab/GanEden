@@ -33,7 +33,7 @@
       "confidence": "Confidence & self-worth"
     },
     "calculating": { "title": "Reading your numbers…" },
-    "reveal": { "title": "Your numbers, {{name}}", "cta": "Enter your garden" }
+    "reveal": { "title": "Your numbers, {{name}}", "cta": "Enter your garden", "recompute": "Redo my numbers" }
   },
   "numbers": {
     "life_path": "Life Path", "expression": "Expression", "soul_urge": "Soul Urge",
