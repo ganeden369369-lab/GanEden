@@ -7,15 +7,32 @@
     "orientation": "portrait",
     "icon": "../../assets/icon/icon.png",
     "userInterfaceStyle": "light",
-    "ios": { "supportsTablet": false, "bundleIdentifier": "co.ganeden.app" },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "co.ganeden.app"
+    },
     "android": {
       "package": "co.ganeden.app",
-      "adaptiveIcon": { "foregroundImage": "../../assets/icon/adaptive-icon-foreground.png", "backgroundColor": "#F6E3DF" }
+      "adaptiveIcon": {
+        "foregroundImage": "../../assets/icon/adaptive-icon-foreground.png",
+        "backgroundColor": "#F6E3DF"
+      }
     },
     "plugins": [
       "expo-router",
-      ["expo-splash-screen", { "image": "../../assets/icon/splash-icon.png", "imageWidth": 200, "resizeMode": "contain", "backgroundColor": "#FFF7F4" }]
+      [
+        "expo-splash-screen",
+        {
+          "image": "../../assets/icon/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#FFF7F4"
+        }
+      ],
+      "expo-localization"
     ],
-    "experiments": { "typedRoutes": true }
+    "experiments": {
+      "typedRoutes": true
+    }
   }
 }

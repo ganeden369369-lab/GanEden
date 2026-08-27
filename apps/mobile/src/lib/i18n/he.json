@@ -1,0 +1,39 @@
+{
+  "app": { "name": "גן עדן" },
+  "common": { "continue": "המשך", "back": "חזרה", "skip": "דלגי", "retry": "נסי שוב" },
+  "auth": {
+    "title": "בחזרה לגן העדן הפנימי שלך",
+    "emailLabel": "האימייל שלך",
+    "sendCode": "שלחו לי קוד",
+    "codeLabel": "קוד בן 6 ספרות",
+    "verify": "אישור",
+    "sent": "שלחנו קוד ל־{{email}}"
+  },
+  "onboarding": {
+    "language": { "title": "באיזו שפה נדבר?", "he": "עברית", "en": "English" },
+    "name": { "title": "מה השם המלא שלך?", "hint": "כמו בתעודת הזהות — המספרים שלך נולדים ממנו", "placeholder": "שם מלא" },
+    "birthday": { "title": "מתי נולדת?" },
+    "status": {
+      "title": "איפה את באהבה עכשיו?",
+      "single": "רווקה", "dating": "בדייטים", "relationship": "בזוגיות", "married": "נשואה"
+    },
+    "goals": {
+      "title": "בשביל מה הגעת?",
+      "subtitle": "בחרי כל מה שמדבר אלייך",
+      "find_partner": "למצוא את בן הזוג שלי",
+      "improve_relationship": "לשפר את הזוגיות שלי",
+      "grow_as_woman": "לצמוח כאישה",
+      "heal_past": "להחלים מהעבר",
+      "understand_numbers": "להבין את המספרים שלי",
+      "confidence": "ביטחון וערך עצמי"
+    },
+    "calculating": { "title": "קוראת את המספרים שלך…" },
+    "reveal": { "title": "המספרים שלך, {{name}}", "cta": "להיכנס לגן" }
+  },
+  "numbers": {
+    "life_path": "מספר נתיב החיים", "expression": "מספר הביטוי", "soul_urge": "מספר הנשמה",
+    "personality": "מספר האישיות", "birthday": "מספר יום הלידה", "personalDay": "יום אישי {{n}}"
+  },
+  "tabs": { "home": "בית", "chat": "עדן", "numbers": "מספרים", "me": "אני" },
+  "me": { "signOut": "התנתקות", "language": "שפה" }
+}

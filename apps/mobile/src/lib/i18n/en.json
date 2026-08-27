@@ -1,0 +1,39 @@
+{
+  "app": { "name": "Gan Eden" },
+  "common": { "continue": "Continue", "back": "Back", "skip": "Skip", "retry": "Try again" },
+  "auth": {
+    "title": "Back to your inner Garden of Eden",
+    "emailLabel": "Your email",
+    "sendCode": "Send me a code",
+    "codeLabel": "6-digit code",
+    "verify": "Verify",
+    "sent": "We sent a code to {{email}}"
+  },
+  "onboarding": {
+    "language": { "title": "Choose your language", "he": "עברית", "en": "English" },
+    "name": { "title": "What's your full name?", "hint": "As written on your ID — your numbers come from it", "placeholder": "Full name" },
+    "birthday": { "title": "When were you born?" },
+    "status": {
+      "title": "Where are you in love right now?",
+      "single": "Single", "dating": "Dating", "relationship": "In a relationship", "married": "Married"
+    },
+    "goals": {
+      "title": "What are you here for?",
+      "subtitle": "Choose everything that speaks to you",
+      "find_partner": "Finding my partner",
+      "improve_relationship": "Improving my relationship",
+      "grow_as_woman": "Growing as a woman",
+      "heal_past": "Healing from the past",
+      "understand_numbers": "Understanding my numbers",
+      "confidence": "Confidence & self-worth"
+    },
+    "calculating": { "title": "Reading your numbers…" },
+    "reveal": { "title": "Your numbers, {{name}}", "cta": "Enter your garden" }
+  },
+  "numbers": {
+    "life_path": "Life Path", "expression": "Expression", "soul_urge": "Soul Urge",
+    "personality": "Personality", "birthday": "Birthday", "personalDay": "Personal day {{n}}"
+  },
+  "tabs": { "home": "Home", "chat": "Eden", "numbers": "Numbers", "me": "Me" },
+  "me": { "signOut": "Sign out", "language": "Language" }
+}
