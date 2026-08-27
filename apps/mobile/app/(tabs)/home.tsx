@@ -3,7 +3,7 @@ import { Screen, Text, tokens } from '../../src/ui';
 import { useProfile } from '../../src/features/profile/useProfile';
 import { useT } from '../../src/lib/i18n';
 import { todayIso } from '../../src/lib/dates';
-import { useSession } from '../../src/lib/supabase';
+import { useSession } from '../../src/lib/session';
 
 export default function Home() {
   const t = useT();

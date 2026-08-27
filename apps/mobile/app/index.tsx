@@ -3,7 +3,7 @@ import { ActivityIndicator, View } from 'react-native';
 import { Button, Screen, Text, tokens } from '../src/ui';
 import { useProfile } from '../src/features/profile/useProfile';
 import { useT } from '../src/lib/i18n';
-import { useSession } from '../src/lib/supabase';
+import { useSession } from '../src/lib/session';
 
 export default function Index() {
   const t = useT();

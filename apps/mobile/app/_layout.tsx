@@ -8,6 +8,7 @@ import { CormorantGaramond_500Medium } from '@expo-google-fonts/cormorant-garamo
 import { FrankRuhlLibre_500Medium } from '@expo-google-fonts/frank-ruhl-libre';
 import { initI18n } from '../src/lib/i18n';
 import { QueryProvider } from '../src/lib/query';
+import { SessionProvider } from '../src/lib/session';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -29,7 +30,9 @@ export default function RootLayout() {
   if (!ready) return null;
   return (
     <QueryProvider>
-      <Stack screenOptions={{ headerShown: false }} />
+      <SessionProvider>
+        <Stack screenOptions={{ headerShown: false }} />
+      </SessionProvider>
     </QueryProvider>
   );
 }

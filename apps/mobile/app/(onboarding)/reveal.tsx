@@ -1,22 +1,13 @@
 import { Redirect, router } from 'expo-router';
 import { ActivityIndicator, View } from 'react-native';
-import type { NumerologyProfile } from '@gan-eden/numerology';
+import { NUMBER_I18N, NUMBER_KEYS, parseNumbers } from '@gan-eden/shared';
 import { Button, NumberBadge, Screen, Text, tokens } from '../../src/ui';
 import { useProfile } from '../../src/features/profile/useProfile';
 import { useT } from '../../src/lib/i18n';
-import { useSession } from '../../src/lib/supabase';
+import { useSession } from '../../src/lib/session';
 import { useOnboarding } from '../../src/store/onboarding';
 
-type NumberKey = keyof Pick<NumerologyProfile, 'lifePath' | 'expression' | 'soulUrge' | 'personality' | 'birthday'>;
-
-const OTHERS: NumberKey[] = ['expression', 'soulUrge', 'personality', 'birthday'];
-const I18N_KEY: Record<NumberKey, string> = {
-  lifePath: 'life_path',
-  expression: 'expression',
-  soulUrge: 'soul_urge',
-  personality: 'personality',
-  birthday: 'birthday',
-};
+const OTHERS = NUMBER_KEYS.filter((k) => k !== 'lifePath');
 
 export default function Reveal() {
   const t = useT();
@@ -35,7 +26,7 @@ export default function Reveal() {
   }
   if (!profile) return <Redirect href="/(onboarding)/language" />;
 
-  const numbers = profile.numbers as unknown as NumerologyProfile;
+  const numbers = parseNumbers(profile.numbers);
   const firstName = profile.full_name.split(' ')[0];
   return (
     <Screen>
@@ -45,7 +36,7 @@ export default function Reveal() {
       <View style={{ alignItems: 'center', marginBottom: tokens.space.xl }}>
         <NumberBadge value={numbers.lifePath} size="lg" />
         <Text variant="caption" tone="muted" style={{ marginTop: tokens.space.sm }}>
-          {t(`numbers.${I18N_KEY.lifePath}`)}
+          {t(`numbers.${NUMBER_I18N.lifePath}`)}
         </Text>
       </View>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: tokens.space.lg, marginBottom: tokens.space.xl }}>
@@ -53,7 +44,7 @@ export default function Reveal() {
           <View key={k} style={{ alignItems: 'center' }}>
             <NumberBadge value={numbers[k]} size="sm" />
             <Text variant="caption" tone="muted" style={{ marginTop: tokens.space.xs }}>
-              {t(`numbers.${I18N_KEY[k]}`)}
+              {t(`numbers.${NUMBER_I18N[k]}`)}
             </Text>
           </View>
         ))}

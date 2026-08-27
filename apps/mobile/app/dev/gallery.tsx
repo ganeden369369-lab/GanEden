@@ -4,8 +4,8 @@ import { Avatar, Button, Card, Choice, Field, Icon, NumberBadge, QuoteCard, Scre
 import { setLanguage } from '../../src/lib/i18n';
 
 export default function Gallery() {
-  if (!__DEV__) return null;
   const { i18n } = useTranslation();
+  if (!__DEV__) return null;
   const lang = i18n.language;
   const row = { flexDirection: 'row' as const, gap: tokens.space.md, alignItems: 'center' as const, marginBottom: tokens.space.lg };
   return (
