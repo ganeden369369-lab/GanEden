@@ -5,6 +5,7 @@ describe('digitSum', () => {
   it('sums digits', () => {
     expect(digitSum(1990)).toBe(19);
     expect(digitSum(7)).toBe(7);
+    expect(digitSum(0)).toBe(0);
   });
 });
 
@@ -24,5 +25,9 @@ describe('reduce', () => {
   });
   it('throws on negative input', () => {
     expect(() => reduce(-1)).toThrow();
+  });
+  it('throws on non-integer input', () => {
+    expect(() => reduce(1.5)).toThrow(RangeError);
+    expect(() => reduce(Number.NaN)).toThrow(RangeError);
   });
 });
