@@ -228,10 +228,10 @@ create or replace function public.today_quote(p_user uuid)
 returns table (text text, theme text, is_fallback boolean)
 language sql security definer set search_path = public stable as $$
   select * from (
-    select q.text, q.theme, false as is_fallback from public.daily_quotes q where q.user_id = p_user and q.for_date = current_date
+    select q.text, q.theme, false as is_fallback from public.daily_quotes q where q.user_id = p_user and p_user = auth.uid() and q.for_date = current_date
     union all
     select f.text, f.theme, true as is_fallback from public.quote_fallbacks f
-      join public.profiles p on p.user_id = p_user and p.language = f.language
+      join public.profiles p on p.user_id = p_user and p_user = auth.uid() and p.language = f.language
       where not exists (select 1 from public.daily_quotes q where q.user_id = p_user and q.for_date = current_date)
   ) t
   order by is_fallback, random() limit 1;
