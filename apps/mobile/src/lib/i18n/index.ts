@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Localization from 'expo-localization';
 import * as Updates from 'expo-updates';
 import i18next from 'i18next';
-import { I18nManager } from 'react-native';
+import { I18nManager, Platform } from 'react-native';
 import { initReactI18next, useTranslation } from 'react-i18next';
 import type { Language } from '@gan-eden/shared';
 import en from './en.json';
@@ -32,6 +32,13 @@ export async function initI18n(): Promise<Language> {
 
 function applyDirection(lang: Language): boolean {
   const rtl = lang === 'he';
+  if (Platform.OS === 'web') {
+    if (typeof document !== 'undefined') {
+      document.documentElement.dir = rtl ? 'rtl' : 'ltr';
+    }
+    appliedRtl = rtl;
+    return false; // web applies direction live via the DOM; no reload needed
+  }
   I18nManager.allowRTL(rtl);
   if (appliedRtl === rtl) return false;
   I18nManager.forceRTL(rtl);

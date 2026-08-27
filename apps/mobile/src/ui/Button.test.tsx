@@ -2,6 +2,7 @@ import { fireEvent, render } from '@testing-library/react-native';
 import { Button } from './Button';
 
 jest.mock('../lib/i18n', () => ({ currentLanguage: () => 'en' }));
+jest.mock('react-i18next', () => ({ useTranslation: () => ({ i18n: { language: 'en' } }) }));
 
 it('calls onPress and exposes disabled state', () => {
   const onPress = jest.fn();

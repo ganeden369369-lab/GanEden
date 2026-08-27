@@ -1,10 +1,12 @@
 import { View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Avatar, Button, Card, Choice, Field, Icon, NumberBadge, QuoteCard, Screen, Text, tokens } from '../../src/ui';
-import { setLanguage, currentLanguage } from '../../src/lib/i18n';
+import { setLanguage } from '../../src/lib/i18n';
 
 export default function Gallery() {
   if (!__DEV__) return null;
-  const lang = currentLanguage();
+  const { i18n } = useTranslation();
+  const lang = i18n.language;
   const row = { flexDirection: 'row' as const, gap: tokens.space.md, alignItems: 'center' as const, marginBottom: tokens.space.lg };
   return (
     <Screen>
