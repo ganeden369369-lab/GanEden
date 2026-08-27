@@ -20,4 +20,16 @@ export default tseslint.config(
     },
     rules: { '@typescript-eslint/no-require-imports': 'off' },
   },
+  {
+    // Node-executed ESM scripts (run directly via `node`, not bundled).
+    files: ['apps/mobile/.maestro/*.mjs'],
+    languageOptions: {
+      globals: {
+        process: 'readonly',
+        console: 'readonly',
+        fetch: 'readonly',
+        setTimeout: 'readonly',
+      },
+    },
+  },
 );

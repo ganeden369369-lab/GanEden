@@ -58,7 +58,9 @@ Principles:
 gan-eden/
 ├── apps/mobile/                 Expo app
 │   ├── app/                     Expo Router routes: (onboarding)/, (tabs)/home, chat, numbers, me
-│   ├── src/components/          UI (design-system primitives + feature components)
+│   │   └── dev/gallery.tsx      Design-system component gallery (dev-only route)
+│   ├── src/ui/                  Design-system primitives (Button, Card, Text, tokens, ...)
+│   ├── src/components/          Feature components built on src/ui
 │   ├── src/features/            onboarding, chat, quotes, numbers, compatibility, settings
 │   ├── src/lib/                 supabase client, i18n, analytics, theme tokens
 │   └── src/hooks/               TanStack Query hooks per feature
@@ -84,13 +86,13 @@ Tooling: pnpm workspaces, TypeScript strict everywhere, ESLint + Prettier, Husky
 
 | Concern | Choice |
 |---|---|
-| Runtime | Expo SDK (latest stable), **Expo Go for v1** (no custom native modules — see D7) |
+| Runtime | Expo SDK (latest stable), **Expo Go for v1** (no custom native modules — see D7); the Expo web target (`expo start --web`) is also enabled, for visual review only — not a release target |
 | Navigation | Expo Router (file-based, typed routes) |
 | Styling | NativeWind v4; tokens in `src/lib/theme.ts` (colors from the brand: rose-gold gradient accent, blush surfaces, cream backgrounds; dark = plum/mocha) |
 | Motion | `react-native-reanimated` + `react-native-gesture-handler` (both in Expo Go) |
 | Server state | TanStack Query wrapping `supabase-js`; optimistic updates for chat |
 | Local state | Zustand (onboarding draft, UI prefs) |
-| Auth | Supabase Auth — Sign in with Apple, Google, email magic link; session persisted in `expo-secure-store` |
+| Auth | Supabase Auth — Sign in with Apple, Google, email magic link; session persisted in AsyncStorage (Supabase's documented RN adapter; SecureStore's 2 KB limit breaks session JSON) — revisit with an encrypted-storage adapter in Phase 5 |
 | Streaming | `expo/fetch` reading SSE from `chat-send` |
 | i18n | `i18next` + `react-i18next` + `expo-localization`; HE and EN resource files; `I18nManager.forceRTL` + reload on language change |
 | Fonts | `expo-font`; HE/EN pairs: sans **Heebo**; display serif **Frank Ruhl Libre** (HE) / **Cormorant Garamond** (EN) — replace with brand fonts when supplied |
