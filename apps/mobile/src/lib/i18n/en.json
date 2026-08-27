@@ -1,6 +1,6 @@
 {
   "app": { "name": "Gan Eden" },
-  "common": { "continue": "Continue", "back": "Back", "skip": "Skip", "retry": "Try again" },
+  "common": { "continue": "Continue", "back": "Back", "skip": "Skip", "retry": "Try again", "loadError": "Something went wrong loading your garden." },
   "auth": {
     "title": "Back to your inner Garden of Eden",
     "emailLabel": "Your email",

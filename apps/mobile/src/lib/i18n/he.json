@@ -1,6 +1,6 @@
 {
   "app": { "name": "גן עדן" },
-  "common": { "continue": "המשך", "back": "חזרה", "skip": "דלגי", "retry": "נסי שוב" },
+  "common": { "continue": "המשך", "back": "חזרה", "skip": "דלגי", "retry": "נסי שוב", "loadError": "משהו השתבש בטעינת הגן שלך." },
   "auth": {
     "title": "בחזרה לגן העדן הפנימי שלך",
     "emailLabel": "האימייל שלך",

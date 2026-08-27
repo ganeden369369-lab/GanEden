@@ -16,12 +16,23 @@ export function useSession(): { session: Session | null; loading: boolean } {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session);
-      setLoading(false);
-    });
+    let active = true;
+    supabase.auth
+      .getSession()
+      .then(({ data }) => {
+        if (active) setSession(data.session);
+      })
+      .catch(() => {
+        if (active) setSession(null);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
-    return () => sub.subscription.unsubscribe();
+    return () => {
+      active = false;
+      sub.subscription.unsubscribe();
+    };
   }, []);
   return { session, loading };
 }
