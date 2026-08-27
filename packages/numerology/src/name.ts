@@ -7,14 +7,14 @@ export function normalizeName(name: string, script: Script): string {
   if (script === 'latin') {
     return name
       .normalize('NFD')
-      .replace(/[̀-ͯ]/g, '') // strip accents
+      .replace(/[\u0300-\u036f]/g, '') // strip accents
       .toLowerCase()
       .replace(/[^a-z]/g, '');
   }
   return name
-    .replace(/[֑-ׇ]/g, '') // niqqud + cantillation
+    .replace(/[\u0591-\u05C7]/g, '') // niqqud + cantillation
     .replace(/[ךםןףץ]/g, (c) => HEBREW_FINALS[c] ?? c)
-    .replace(/[^א-ת]/g, '');
+    .replace(/[^\u05D0-\u05EA]/g, '');
 }
 
 export interface NameSums {
