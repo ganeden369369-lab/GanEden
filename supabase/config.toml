@@ -247,6 +247,13 @@ otp_expiry = 3600
 # subject = "You have been invited"
 # content_path = "./supabase/templates/invite.html"
 
+# The default local magic-link template only renders a confirmation link, not the numeric
+# OTP code — but the app's verify screen asks users to type a 6-digit code. Point the
+# magic-link template (sent by signInWithOtp) at one that also renders {{ .Token }}, the code.
+[auth.email.template.magic_link]
+subject = "Your Gan Eden sign-in code"
+content_path = "./supabase/templates/magic_link.html"
+
 # Uncomment to customize notification email template
 # [auth.email.notification.password_changed]
 # enabled = true

@@ -7,6 +7,7 @@ import { Heebo_400Regular, Heebo_600SemiBold } from '@expo-google-fonts/heebo';
 import { CormorantGaramond_500Medium } from '@expo-google-fonts/cormorant-garamond';
 import { FrankRuhlLibre_500Medium } from '@expo-google-fonts/frank-ruhl-libre';
 import { initI18n } from '../src/lib/i18n';
+import { QueryProvider } from '../src/lib/query';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -26,5 +27,9 @@ export default function RootLayout() {
     if (ready) SplashScreen.hideAsync();
   }, [ready]);
   if (!ready) return null;
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <QueryProvider>
+      <Stack screenOptions={{ headerShown: false }} />
+    </QueryProvider>
+  );
 }
