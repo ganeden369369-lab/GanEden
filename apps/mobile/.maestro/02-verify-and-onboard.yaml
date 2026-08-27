@@ -1,0 +1,48 @@
+appId: host.exp.exponent   # Expo Go; switch to co.ganeden.app for dev builds
+---
+# Flow 2: continues from the verify screen left up by flow 1 (do NOT
+# launchApp here - relaunching would drop the app back to the welcome
+# screen and lose the pending OTP session). Verifies the code, then taps
+# through all four onboarding steps to home.
+- tapOn:
+    id: code
+- inputText: "${OTP}"
+- tapOn:
+    id: verify
+
+# Onboarding step 1: language
+- tapOn:
+    id: lang-en
+- tapOn:
+    id: continue
+
+# Onboarding step 2: about (name + DOB). The native date spinner's
+# default value is a valid DOB (18+), so we don't touch dob-picker.
+- tapOn:
+    id: full-name
+- inputText: "Maya Cohen"
+- tapOn:
+    id: continue
+
+# Onboarding step 3: status
+- tapOn:
+    id: status-single
+- tapOn:
+    id: continue
+
+# Onboarding step 4: goals
+- tapOn:
+    id: goal-find_partner
+- tapOn:
+    id: continue
+
+# Profile is saved and numerology calculated asynchronously.
+- assertVisible:
+    id: calculating
+- assertVisible:
+    id: reveal-title
+    timeout: 15000
+- tapOn:
+    id: enter
+- assertVisible:
+    id: home-title
