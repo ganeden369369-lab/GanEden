@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database, Language } from '@gan-eden/shared';
 import { buildMemoryExtractionInput, MemoryExtractionSchema } from '@gan-eden/prompts';
-import { estimateUsd, type AiProvider } from './ai.ts';
+import { estimateUsd, usageOf, type AiProvider } from './ai.ts';
 
 /**
  * Hard ceiling on stored facts per user. At the cap, extraction still runs
@@ -80,13 +80,30 @@ export async function extractAndStoreMemory(
       exchange,
     });
 
-    const result = await provider.complete({
-      system,
-      user,
-      maxTokens: 700,
-      schema: MemoryExtractionSchema,
-      kind: 'memory',
-    });
+    let result;
+    try {
+      result = await provider.complete({
+        system,
+        user,
+        maxTokens: 700,
+        schema: MemoryExtractionSchema,
+        kind: 'memory',
+      });
+    } catch (err) {
+      // A parse/validation failure still means the provider generated (and,
+      // for a real provider, was billed for) a real completion — bill it
+      // before letting the outer catch log and swallow the error.
+      const usage = usageOf(err);
+      if (usage) {
+        const { error: spendError } = await admin.rpc('add_spend', {
+          p_usd: estimateUsd(usage.model, usage.inputTokens, usage.outputTokens),
+        });
+        if (spendError) {
+          console.error('extractAndStoreMemory: add_spend failed (parse-error usage)', spendError.message);
+        }
+      }
+      throw err;
+    }
     const { error: spendError } = await admin.rpc('add_spend', {
       p_usd: estimateUsd(result.model, result.inputTokens, result.outputTokens),
     });

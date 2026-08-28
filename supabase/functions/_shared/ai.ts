@@ -38,15 +38,34 @@ export interface CompleteResult<T> {
   model: string;
 }
 
-/** Thrown by `complete()` when a `schema` was given but the reply couldn't be parsed/validated against it. */
+/** Token usage a provider call actually incurred, even when it went on to fail (e.g. a parse error) — enough to bill it. */
+export interface ProviderUsage {
+  inputTokens: number;
+  outputTokens: number;
+  model: string;
+}
+
+/**
+ * Thrown by `complete()` when a `schema` was given but the reply couldn't be
+ * parsed/validated against it. Carries `usage` whenever the provider had
+ * already produced (and, for a real provider, already been billed for) a
+ * response by the time parsing failed — the caller is expected to record
+ * spend for it before handling/logging the error, via `usageOf(err)`.
+ */
 export class ProviderError extends Error {
   constructor(
     public readonly code: 'parse',
     message?: string,
+    public readonly usage?: ProviderUsage,
   ) {
     super(message ?? code);
     this.name = 'ProviderError';
   }
+}
+
+/** The `ProviderUsage` carried by a `ProviderError`, or `null` for any other error (or one with no usage to bill). */
+export function usageOf(err: unknown): ProviderUsage | null {
+  return err instanceof ProviderError && err.usage ? err.usage : null;
 }
 
 export interface AiProvider {
@@ -303,6 +322,7 @@ export class MockProvider implements AiProvider {
         throw new ProviderError(
           'parse',
           `MockProvider: kind '${kind}' output failed schema validation: ${parsed.error.message}`,
+          { inputTokens: wordCount(args.system) + wordCount(args.user), outputTokens: wordCount(text), model: 'mock' },
         );
       }
       data = parsed.data;
@@ -441,7 +461,15 @@ export class AnthropicProvider implements AiProvider {
         );
 
         if (response.parsed_output === null) {
-          throw new ProviderError('parse', 'Anthropic returned no parsed_output for a structured complete() call');
+          throw new ProviderError(
+            'parse',
+            'Anthropic returned no parsed_output for a structured complete() call',
+            {
+              inputTokens: response.usage.input_tokens,
+              outputTokens: response.usage.output_tokens,
+              model: response.model,
+            },
+          );
         }
 
         const text = response.content

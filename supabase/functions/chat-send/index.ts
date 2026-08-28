@@ -2,7 +2,7 @@ import { buildSystemPrompt, buildTitlePrompt, PERSONA_VERSION } from '@gan-eden/
 import type { Language } from '@gan-eden/shared';
 import { adminClient, getUser } from '../_shared/supabase.ts';
 import { corsHeaders, createSse, jsonResponse } from '../_shared/sse.ts';
-import { estimateUsd, getProvider, type ChatTurn } from '../_shared/ai.ts';
+import { estimateUsd, getProvider, usageOf, type ChatTurn } from '../_shared/ai.ts';
 import { firstNameOf, loadChatContext } from '../_shared/context.ts';
 import { extractAndStoreMemory } from '../_shared/memory.ts';
 import { t } from '../_shared/copy.ts';
@@ -260,7 +260,24 @@ Deno.serve(async (req) => {
         const { data: chatRow } = await admin.from('chats').select('title').eq('id', chatId).maybeSingle();
         if (chatRow && !chatRow.title) {
           const titlePrompt = buildTitlePrompt({ language, firstUserMessage: text });
-          const titleResult = await provider.complete({ ...titlePrompt, maxTokens: 30, kind: 'title' });
+          let titleResult;
+          try {
+            titleResult = await provider.complete({ ...titlePrompt, maxTokens: 30, kind: 'title' });
+          } catch (err) {
+            // A parse/validation failure still means the provider generated
+            // (and, for a real provider, was billed for) a real completion —
+            // bill it before letting the outer catch log and swallow it.
+            const usage = usageOf(err);
+            if (usage) {
+              const { error: titleParseSpendError } = await admin.rpc('add_spend', {
+                p_usd: estimateUsd(usage.model, usage.inputTokens, usage.outputTokens),
+              });
+              if (titleParseSpendError) {
+                console.error('chat-send: add_spend failed (title parse-error usage)', titleParseSpendError.message);
+              }
+            }
+            throw err;
+          }
           // Titling is a real provider call — bill it like any other, so
           // the daily kill-switch sees the full cost of a turn.
           const { error: titleSpendError } = await admin.rpc('add_spend', {

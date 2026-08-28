@@ -1,7 +1,7 @@
 import { strict as assert } from 'node:assert';
 import { z } from 'zod';
 import { MemoryExtractionSchema, buildMemoryExtractionInput, buildTitlePrompt } from '@gan-eden/prompts';
-import { MockProvider, ProviderError, estimateUsd, getProvider } from './ai.ts';
+import { MockProvider, ProviderError, estimateUsd, getProvider, usageOf } from './ai.ts';
 
 /** Local stand-in for `packages/prompts/src/quotes.ts`'s `QuoteBatchSchema` (Task 2) — same shape, defined here so Task 1 doesn't depend on Task 2. */
 const QuoteBatchSchema = z.object({
@@ -311,4 +311,36 @@ Deno.test('MockProvider.complete throws ProviderError("parse") when schema-valid
       return true;
     },
   );
+});
+
+Deno.test('MockProvider.complete: a ProviderError("parse") from a schema the mock output cannot satisfy carries non-zero usage (billable via usageOf)', async () => {
+  const provider = new MockProvider();
+  const impossibleSchema = z.object({ neverPresent: z.literal('nope') });
+
+  let caught: unknown;
+  try {
+    await provider.complete({
+      system: '"facts"',
+      user: 'User: hello there, this is a real exchange with real content',
+      maxTokens: 50,
+      schema: impossibleSchema,
+      kind: 'memory',
+    });
+    assert.fail('expected provider.complete to throw');
+  } catch (err) {
+    caught = err;
+  }
+
+  assert.ok(caught instanceof ProviderError);
+  const usage = usageOf(caught);
+  assert.ok(usage, 'expected the thrown ProviderError to carry usage');
+  assert.equal(usage!.model, 'mock');
+  assert.ok(usage!.inputTokens > 0, `expected non-zero inputTokens, got ${usage!.inputTokens}`);
+  assert.ok(usage!.outputTokens > 0, `expected non-zero outputTokens, got ${usage!.outputTokens}`);
+});
+
+Deno.test('usageOf returns null for a non-ProviderError and for a ProviderError with no usage', () => {
+  assert.equal(usageOf(new Error('some other failure')), null);
+  assert.equal(usageOf(new ProviderError('parse', 'no usage attached')), null);
+  assert.equal(usageOf('not even an Error'), null);
 });
