@@ -5,6 +5,8 @@ dist/
 .env
 .env.*
 !.env.example
+!.env.local.example
 supabase/.temp/
+supabase/functions/.env.local
 coverage/
 .superpowers/
