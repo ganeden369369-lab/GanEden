@@ -10,7 +10,11 @@ export type ChatMetaEvent = {
   remaining: number;
 };
 export type ChatDeltaEvent = { text: string };
-export type ChatDoneEvent = { status: 'complete' | 'partial'; assistantMessageId: string; title: string | null };
+export type ChatDoneEvent = {
+  status: 'complete' | 'partial';
+  assistantMessageId: string | null;
+  title: string | null;
+};
 export type ChatCapEvent = { remaining: 0 };
 export type ChatErrorEvent = { code: 'budget' | 'provider' | 'auth' | 'bad_request'; message: string };
 
