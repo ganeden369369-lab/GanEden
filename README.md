@@ -22,6 +22,18 @@ There's no global Supabase CLI install — every command runs via `npx -y supaba
 ## Web target (for visual review)
 `pnpm --filter @gan-eden/mobile run web` runs the app in a browser. It's a convenience for reviewing UI without a simulator, not a supported release target (see `docs/ARCHITECTURE.md` §3.1, D7). The design-system component gallery is at the `/dev/gallery` route.
 
+## Chat locally
+The Eden tab talks to the `chat-send` edge function.
+1. `cp supabase/functions/.env.local.example supabase/functions/.env.local` — defaults to `AI_PROVIDER=mock`, a deterministic, network-free reply generator (no Anthropic key needed).
+2. In a second terminal: `pnpm functions:serve` — vendors `packages/{shared,prompts,numerology}` into `supabase/functions/_vendor/` (required because `supabase functions serve` only mounts `supabase/functions`; see `docs/ARCHITECTURE.md` §5) and starts the function against your local Supabase stack.
+3. With the app running (`pnpm --filter @gan-eden/mobile start`), the Eden tab now works end-to-end: send a message, get a streamed reply, hit the 5-message daily cap.
+
+**Getting a JWT to curl `chat-send` directly:** sign in through the app (email code) or run the OTP flow yourself, then either read the `sb-*-auth-token` entry from the browser's `localStorage` (on the web target) and take its `access_token`, or script it in Node: `supabase-js`'s `signInWithOtp({ email })`, poll Mailpit's API (`http://127.0.0.1:54324/api/v1/search?query=to:<email>`, then `/api/v1/message/<id>`) for the 6-digit code, and call `verifyOtp` — the session's `access_token` is the JWT. Send it as `Authorization: Bearer <token>` on a POST to `chat-send` with `{"text": "..."}`.
+
+Deno tests for the shared edge-function code: `npx -y deno@2 test --allow-env --allow-net --config supabase/functions/deno.json supabase/functions/_shared`.
+
+Real email is never sent locally — the OTP code lands in Mailpit (`http://127.0.0.1:54324`), not an inbox.
+
 ## E2E (Maestro)
 Onboarding flows live in `apps/mobile/.maestro/` (`./run.sh`). They're hand-checked but unverified on this machine (no Java/Maestro/emulator installed) — see that directory's README for prereqs and details. Wiring them into CI is a Phase 5 task.
 
