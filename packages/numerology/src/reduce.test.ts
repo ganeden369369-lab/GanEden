@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { digitSum, reduce } from './reduce';
+import { digitSum, reduce } from './reduce.ts';
 
 describe('digitSum', () => {
   it('sums digits', () => {

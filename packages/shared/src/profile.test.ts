@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ProfileInputSchema } from './profile';
+import { ProfileInputSchema } from './profile.ts';
 
 const valid = {
   fullName: 'עדן הרוש',

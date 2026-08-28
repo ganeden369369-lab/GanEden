@@ -1,6 +1,6 @@
 import type { Language, NumerologyProfile } from '@gan-eden/shared';
 import { NUMBER_I18N, NUMBER_KEYS } from '@gan-eden/shared';
-import { methodSummary, personaIntro, safetyRules } from './persona';
+import { methodSummary, personaIntro, safetyRules } from './persona.ts';
 
 export interface Meaning {
   title: string;

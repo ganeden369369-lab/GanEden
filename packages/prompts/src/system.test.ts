@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { NumerologyProfile } from '@gan-eden/shared';
-import { buildSystemPrompt, type PromptContext } from './system';
+import { buildSystemPrompt, type PromptContext } from './system.ts';
 
 function makeCtx(overrides: Partial<PromptContext> = {}): PromptContext {
   const numbers: NumerologyProfile = {

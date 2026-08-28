@@ -1,5 +1,5 @@
-import { parseDate } from './profile';
-import { reduce } from './reduce';
+import { parseDate } from './profile.ts';
+import { reduce } from './reduce.ts';
 
 export interface PersonalCycles {
   personalYear: number;

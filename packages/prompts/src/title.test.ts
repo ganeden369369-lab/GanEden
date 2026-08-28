@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildTitlePrompt } from './title';
+import { buildTitlePrompt } from './title.ts';
 
 describe('buildTitlePrompt', () => {
   it('output prompt contains the first user message', () => {

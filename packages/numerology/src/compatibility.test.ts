@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { compatibility } from './compatibility';
-import { computeProfile } from './profile';
+import { compatibility } from './compatibility.ts';
+import { computeProfile } from './profile.ts';
 
 const her = computeProfile({ fullName: 'Dana', script: 'latin', dob: '1992-03-21' });
 const him = computeProfile({ fullName: 'Tom', script: 'latin', dob: '1990-07-15' });

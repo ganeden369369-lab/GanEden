@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { NUMBER_I18N, NUMBER_KEYS, NumerologyProfileSchema, parseNumbers, safeParseNumbers } from './numbers';
+import { NUMBER_I18N, NUMBER_KEYS, NumerologyProfileSchema, parseNumbers, safeParseNumbers } from './numbers.ts';
 
 const valid = {
   lifePath: 7,

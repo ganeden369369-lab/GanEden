@@ -1,4 +1,4 @@
-import type { Method } from '../method';
+import type { Method } from '../method.ts';
 
 // Pythagorean: A=1 … I=9, J=1 … R=9, S=1 … Z=8
 const LATIN: Record<string, number> = {};

@@ -1,8 +1,8 @@
-import type { Method, Script } from './method';
-import { DEFAULT_METHOD } from './methods/default';
-import { nameSums } from './name';
-import { reduce } from './reduce';
-import { ENGINE_VERSION } from './version';
+import type { Method, Script } from './method.ts';
+import { DEFAULT_METHOD } from './methods/default.ts';
+import { nameSums } from './name.ts';
+import { reduce } from './reduce.ts';
+import { ENGINE_VERSION } from './version.ts';
 
 export interface NumerologyProfile {
   lifePath: number;

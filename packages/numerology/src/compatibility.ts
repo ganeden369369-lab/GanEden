@@ -1,5 +1,5 @@
-import type { NumerologyProfile } from './profile';
-import { reduce } from './reduce';
+import type { NumerologyProfile } from './profile.ts';
+import { reduce } from './reduce.ts';
 
 export interface Compatibility {
   score: number; // 0-100

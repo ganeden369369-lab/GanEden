@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { computeProfile } from './profile';
+import { computeProfile } from './profile.ts';
 
 describe('computeProfile (default method)', () => {
   it('computes John, 1990-07-15', () => {

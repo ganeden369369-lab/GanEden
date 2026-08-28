@@ -1,5 +1,5 @@
-import type { Method, Script } from './method';
-import { DEFAULT_METHOD } from './methods/default';
+import type { Method, Script } from './method.ts';
+import { DEFAULT_METHOD } from './methods/default.ts';
 
 const HEBREW_FINALS: Record<string, string> = { ך: 'כ', ם: 'מ', ן: 'נ', ף: 'פ', ץ: 'צ' };
 

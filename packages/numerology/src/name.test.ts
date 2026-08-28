@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { nameSums, normalizeName } from './name';
+import { nameSums, normalizeName } from './name.ts';
 
 describe('normalizeName', () => {
   it('lowercases and strips non-letters (latin)', () => {

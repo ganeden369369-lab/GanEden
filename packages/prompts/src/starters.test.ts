@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { starterPrompts } from './starters';
+import { starterPrompts } from './starters.ts';
 
 describe('starterPrompts', () => {
   for (const language of ['en', 'he'] as const) {

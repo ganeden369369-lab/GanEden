@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MemoryExtractionSchema, buildMemoryExtractionInput } from './memory';
+import { MemoryExtractionSchema, buildMemoryExtractionInput } from './memory.ts';
 
 describe('MemoryExtractionSchema', () => {
   it('accepts a valid object', () => {

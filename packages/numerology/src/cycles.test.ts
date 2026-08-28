@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { personalCycles } from './cycles';
+import { personalCycles } from './cycles.ts';
 
 describe('personalCycles', () => {
   it('computes year/month/day for dob 1990-07-15 on 2026-08-27', () => {
