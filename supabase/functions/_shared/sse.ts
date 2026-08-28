@@ -22,6 +22,13 @@ export interface Sse {
   send(event: string, data: unknown): void;
   /** End the stream. */
   close(): void;
+  /**
+   * True once a `send()` write has failed (e.g. the client disconnected).
+   * `send`/`close` never throw regardless, but a caller driving a longer
+   * generation loop should check this to stop doing pointless work once
+   * nobody is listening.
+   */
+  readonly closed: boolean;
 }
 
 /**
@@ -33,6 +40,7 @@ export function createSse(): Sse {
   const encoder = new TextEncoder();
   const { readable, writable } = new TransformStream<Uint8Array, Uint8Array>();
   const writer = writable.getWriter();
+  let closed = false;
 
   const response = new Response(readable, {
     headers: {
@@ -46,13 +54,23 @@ export function createSse(): Sse {
   function send(event: string, data: unknown): void {
     const frame = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
     // Fire-and-forget: writing after the stream is closed (e.g. client
-    // disconnected) rejects asynchronously — swallow it rather than crash.
-    writer.write(encoder.encode(frame)).catch(() => {});
+    // disconnected) rejects asynchronously — swallow it rather than crash,
+    // but flag it so callers can stop trying.
+    writer.write(encoder.encode(frame)).catch(() => {
+      closed = true;
+    });
   }
 
   function close(): void {
     writer.close().catch(() => {});
   }
 
-  return { response, send, close };
+  return {
+    response,
+    send,
+    close,
+    get closed() {
+      return closed;
+    },
+  };
 }

@@ -57,6 +57,46 @@ Deno.test('MockProvider.streamChat replies in Hebrew for a Hebrew userBlock and 
   assert.ok(result.text.includes('מאיה'), 'reply should include the user first name');
 });
 
+Deno.test('MockProvider.streamChat stops emitting deltas once the signal is aborted', async () => {
+  const provider = new MockProvider();
+  const controller = new AbortController();
+  const chunks: string[] = [];
+
+  const result = await provider.streamChat({
+    system: {
+      stablePrefix: 'You are Eden...',
+      userBlock: ['About this user:', 'Name: Maya', 'Numbers:', '- life_path: 7'].join('\n'),
+    },
+    messages: [{ role: 'user', content: 'Tell me something long and detailed, please.' }],
+    maxTokens: 500,
+    signal: controller.signal,
+    onDelta: (t) => {
+      chunks.push(t);
+      if (chunks.length === 2) controller.abort();
+    },
+  });
+
+  // The loop checks the signal between tokens, so exactly the 2 chunks
+  // that were already in flight when abort() fired get through.
+  assert.equal(chunks.length, 2);
+  assert.equal(result.text, chunks.join(''));
+  // A full (unaborted) reply is much longer than 2 word-chunks — confirms
+  // streaming genuinely stopped early rather than the reply being short.
+  const fullReply = await new MockProvider().streamChat({
+    system: {
+      stablePrefix: 'You are Eden...',
+      userBlock: ['About this user:', 'Name: Maya', 'Numbers:', '- life_path: 7'].join('\n'),
+    },
+    messages: [{ role: 'user', content: 'Tell me something long and detailed, please.' }],
+    maxTokens: 500,
+    onDelta: () => {},
+  });
+  assert.ok(
+    fullReply.text.split(/\s+/).length > 10,
+    'expected the full mock reply to be much longer than the aborted 2-chunk one',
+  );
+});
+
 Deno.test('MockProvider.complete returns JSON parseable by MemoryExtractionSchema for a memory prompt', async () => {
   const provider = new MockProvider();
   const { system, user } = buildMemoryExtractionInput({

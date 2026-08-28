@@ -36,3 +36,26 @@ Deno.test('send after close is a no-op that does not throw synchronously', () =>
   // Writing to a closed writer rejects asynchronously; send() must not throw.
   assert.doesNotThrow(() => sse.send('done', { status: 'complete' }));
 });
+
+Deno.test('closed starts false and flips true once a write actually fails', async () => {
+  const sse = createSse();
+  assert.equal(sse.closed, false);
+
+  sse.close();
+  sse.send('done', { status: 'complete' }); // rejects asynchronously (writer closed)
+
+  // Let the microtask queue settle so the rejection handler runs.
+  await new Promise((resolve) => setTimeout(resolve, 10));
+  assert.equal(sse.closed, true);
+});
+
+Deno.test('closed flips true once the reader disconnects (simulated client abort)', async () => {
+  const sse = createSse();
+  const reader = sse.response.body!.getReader();
+  await reader.cancel(); // simulates the client going away mid-stream
+
+  sse.send('delta', { text: 'still trying' });
+  await new Promise((resolve) => setTimeout(resolve, 10));
+
+  assert.equal(sse.closed, true);
+});
