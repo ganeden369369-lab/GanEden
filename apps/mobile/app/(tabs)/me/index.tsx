@@ -1,10 +1,10 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { router } from 'expo-router';
-import { View } from 'react-native';
+import { router, type Href } from 'expo-router';
+import { Pressable, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { Button, Choice, Screen, Text, tokens } from '../../src/ui';
-import { setLanguage, useT } from '../../src/lib/i18n';
-import { supabase } from '../../src/lib/supabase';
+import { Button, Card, Choice, Icon, Screen, Text, tokens } from '../../../src/ui';
+import { setLanguage, useT } from '../../../src/lib/i18n';
+import { supabase } from '../../../src/lib/supabase';
 
 export default function Me() {
   const t = useT();
@@ -21,6 +21,14 @@ export default function Me() {
       </Text>
       <Choice label={t('onboarding.language.he')} selected={lang === 'he'} onPress={() => setLanguage('he')} />
       <Choice label={t('onboarding.language.en')} selected={lang === 'en'} onPress={() => setLanguage('en')} />
+      <Pressable testID="me-memory" onPress={() => router.push('/(tabs)/me/memory' as Href)} style={{ marginTop: tokens.space.xl }}>
+        <Card style={{ flexDirection: 'row', alignItems: 'center', gap: tokens.space.md }}>
+          <View style={{ flex: 1 }}>
+            <Text variant="heading">{t('me.memoryRow')}</Text>
+          </View>
+          <Icon name="chevron-forward" flipInRtl />
+        </Card>
+      </Pressable>
       <View style={{ flex: 1 }} />
       <Button
         variant="ghost"

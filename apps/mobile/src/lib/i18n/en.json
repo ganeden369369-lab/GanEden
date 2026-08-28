@@ -40,7 +40,7 @@
     "personality": "Personality", "birthday": "Birthday", "personalDay": "Personal day {{n}}"
   },
   "tabs": { "home": "Home", "chat": "Eden", "numbers": "Numbers", "me": "Me" },
-  "me": { "signOut": "Sign out", "language": "Language" },
+  "me": { "signOut": "Sign out", "language": "Language", "memoryRow": "What Eden remembers" },
   "chat": {
     "title": "Eden",
     "new": "New chat",
@@ -60,6 +60,9 @@
     "title": "Memory",
     "empty": "Eden hasn’t remembered anything yet",
     "delete": "Delete",
-    "hint": "What Eden remembers about you across your chats"
+    "hint": "What Eden remembers about you across your chats",
+    "people": "People",
+    "situations": "Situations",
+    "preferences": "Preferences"
   }
 }
