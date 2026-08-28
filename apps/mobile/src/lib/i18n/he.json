@@ -40,5 +40,26 @@
     "personality": "מספר האישיות", "birthday": "מספר יום הלידה", "personalDay": "יום אישי {{n}}"
   },
   "tabs": { "home": "בית", "chat": "עדן", "numbers": "מספרים", "me": "אני" },
-  "me": { "signOut": "התנתקות", "language": "שפה" }
+  "me": { "signOut": "התנתקות", "language": "שפה" },
+  "chat": {
+    "title": "עדן",
+    "new": "שיחה חדשה",
+    "empty": "התחילי שיחה עם עדן",
+    "composerPlaceholder": "כתבי הודעה לעדן…",
+    "send": "שליחה",
+    "capReached": "הגעת למכסת ההודעות של היום",
+    "capHint": "חזרי מחר לעוד זמן עם עדן",
+    "errorGeneric": "משהו השתבש. נסי שוב.",
+    "retry": "נסי שוב",
+    "typing": "עדן מקלידה…",
+    "deleteChat": "מחיקת שיחה",
+    "askEden": "לשאול את עדן",
+    "askEdenHint": "עליו, עלייך, על היום"
+  },
+  "memory": {
+    "title": "זיכרון",
+    "empty": "עדן עוד לא זכרה כלום",
+    "delete": "מחיקה",
+    "hint": "מה שעדן זוכרת עלייך מכל השיחות"
+  }
 }

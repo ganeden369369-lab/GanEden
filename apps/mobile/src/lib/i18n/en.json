@@ -40,5 +40,26 @@
     "personality": "Personality", "birthday": "Birthday", "personalDay": "Personal day {{n}}"
   },
   "tabs": { "home": "Home", "chat": "Eden", "numbers": "Numbers", "me": "Me" },
-  "me": { "signOut": "Sign out", "language": "Language" }
+  "me": { "signOut": "Sign out", "language": "Language" },
+  "chat": {
+    "title": "Eden",
+    "new": "New chat",
+    "empty": "Start a conversation with Eden",
+    "composerPlaceholder": "Message Eden…",
+    "send": "Send",
+    "capReached": "You’ve reached today’s message limit",
+    "capHint": "Come back tomorrow for more time with Eden",
+    "errorGeneric": "Something went wrong. Please try again.",
+    "retry": "Try again",
+    "typing": "Eden is typing…",
+    "deleteChat": "Delete chat",
+    "askEden": "Ask Eden",
+    "askEdenHint": "About him, about you, about today"
+  },
+  "memory": {
+    "title": "Memory",
+    "empty": "Eden hasn’t remembered anything yet",
+    "delete": "Delete",
+    "hint": "What Eden remembers about you across your chats"
+  }
 }
