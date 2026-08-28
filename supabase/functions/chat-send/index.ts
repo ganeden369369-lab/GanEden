@@ -207,9 +207,12 @@ Deno.serve(async (req) => {
         maxTokens: 1024,
         signal: req.signal,
         onDelta: (delta) => {
+          // Always keep the full text — whatever gets persisted as
+          // `partial` must contain everything the provider generated,
+          // even once the SSE write itself has started failing.
+          streamedText += delta;
           // The write already failed once (client gone) — stop bothering.
           if (sse.closed) return;
-          streamedText += delta;
           sse.send('delta', { text: delta });
         },
       });
@@ -315,9 +318,9 @@ Deno.serve(async (req) => {
         // The client is gone — this is very likely an abort-driven
         // rejection (e.g. the Anthropic SDK throwing on a signalled
         // request) rather than a genuine provider failure. No SSE frames;
-        // persist whatever streamed, but we have no `result` here (the
-        // call never resolved), so token/spend accounting is skipped —
-        // there's nothing reliable to report.
+        // persist whatever streamed. We have no `result` here (the call
+        // never resolved), so real token counts aren't available — spend
+        // is estimated from the streamed text below instead of skipped.
         console.error('chat-send: generation aborted by client', err);
       } else {
         console.error('chat-send: generation failed', err);
@@ -341,6 +344,19 @@ Deno.serve(async (req) => {
         if (partialInsertError) {
           console.error('chat-send: failed to persist partial message', partialInsertError.message);
         } else if (aborted) {
+          // No resolved `result` (the provider call threw before
+          // finishing) — estimate output tokens from the streamed
+          // character count (~4 chars/token, a common rough rule of
+          // thumb) against the configured chat model, so a real
+          // generation that got cut off still shows up in spend_daily
+          // instead of costing nothing.
+          const estimatedModel = Deno.env.get('CHAT_MODEL') ?? 'claude-sonnet-5';
+          const estimatedUsd = estimateUsd(estimatedModel, 0, Math.ceil(streamedText.length / 4));
+          const { error: spendError } = await admin.rpc('add_spend', { p_usd: estimatedUsd });
+          if (spendError) {
+            console.error('chat-send: add_spend failed (aborted, estimated)', spendError.message);
+          }
+
           const edgeRuntime = getEdgeRuntime();
           if (edgeRuntime) {
             edgeRuntime.waitUntil(runAfterTurn(streamedText));
