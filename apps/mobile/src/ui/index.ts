@@ -5,7 +5,7 @@ export { Card } from './Card';
 export { Field } from './Field';
 export { Choice } from './Choice';
 export { NumberBadge } from './NumberBadge';
-export { Avatar } from './Avatar';
+export { Avatar, AVATAR_SIZES, type AvatarSize } from './Avatar';
 export { Icon } from './Icon';
 export { Screen } from './Screen';
 export { StepFrame } from './StepFrame';

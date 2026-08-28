@@ -41,7 +41,10 @@ export default function ChatConversationScreen() {
   const isCap = stream.status === 'cap';
   const isError = stream.status === 'error';
 
-  const data: Row[] = [...(messages ?? []), ...(isStreaming ? [{ id: 'streaming' as const, role: 'assistant' as const, content: stream.streamingText }] : [])];
+  // `error` rows are turns that produced nothing worth showing — the error
+  // banner + retry below is the whole UI for them.
+  const visibleMessages = (messages ?? []).filter((m) => m.status !== 'error');
+  const data: Row[] = [...visibleMessages, ...(isStreaming ? [{ id: 'streaming' as const, role: 'assistant' as const, content: stream.streamingText }] : [])];
 
   return (
     <Screen scroll={false}>
@@ -68,14 +71,24 @@ export default function ChatConversationScreen() {
           // shows it.
           const prev = data[index - 1];
           const showAvatar = !(item.role === 'assistant' && prev?.role === 'assistant');
+          // A reply the server persisted mid-generation: shown in full, with
+          // a quiet marker so the truncation isn't mistaken for Eden's voice.
+          const isPartial = 'status' in item && item.status === 'partial';
           return (
-            <Bubble
-              role={item.role === 'user' ? 'user' : 'assistant'}
-              text={item.content}
-              streaming={item.id === 'streaming'}
-              showAvatar={showAvatar}
-              testID={item.role === 'user' ? 'bubble-user' : 'bubble-assistant'}
-            />
+            <View>
+              <Bubble
+                role={item.role === 'user' ? 'user' : 'assistant'}
+                text={item.content}
+                streaming={item.id === 'streaming'}
+                showAvatar={showAvatar}
+                testID={item.role === 'user' ? 'bubble-user' : 'bubble-assistant'}
+              />
+              {isPartial ? (
+                <Text variant="caption" tone="muted" testID="bubble-partial">
+                  {t('chat.partial')}
+                </Text>
+              ) : null}
+            </View>
           );
         }}
       />

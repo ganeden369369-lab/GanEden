@@ -295,6 +295,9 @@ export class AnthropicProvider implements AiProvider {
       };
     } catch (err) {
       if (err instanceof Anthropic.APIError) {
+        // The caller only sees `stopReason: 'error'` — log the status and
+        // message here or the actual cause is lost.
+        console.error('anthropic', err.status, err.message);
         return {
           text: '',
           stopReason: 'error',
@@ -313,12 +316,22 @@ export class AnthropicProvider implements AiProvider {
     outputTokens: number;
     model: string;
   }> {
-    const response = await this.client.messages.create({
-      model: this.genModel,
-      max_tokens: args.maxTokens,
-      system: args.system,
-      messages: [{ role: 'user', content: args.user }],
-    });
+    let response: Anthropic.Message;
+    try {
+      response = await this.client.messages.create({
+        model: this.genModel,
+        max_tokens: args.maxTokens,
+        system: args.system,
+        messages: [{ role: 'user', content: args.user }],
+      });
+    } catch (err) {
+      // `complete()` has no error-shaped return value — callers handle the
+      // throw — but the cause still needs to reach the logs.
+      if (err instanceof Anthropic.APIError) {
+        console.error('anthropic', err.status, err.message);
+      }
+      throw err;
+    }
 
     const text = response.content
       .filter((block): block is Anthropic.TextBlock => block.type === 'text')

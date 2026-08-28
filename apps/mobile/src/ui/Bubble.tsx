@@ -1,5 +1,5 @@
-import { ActivityIndicator, I18nManager, View } from 'react-native';
-import { Avatar } from './Avatar';
+import { ActivityIndicator, View } from 'react-native';
+import { Avatar, AVATAR_SIZES } from './Avatar';
 import { Text } from './Text';
 import { tokens } from './tokens';
 
@@ -23,7 +23,11 @@ export function Bubble({ role, text, streaming, showAvatar = true, testID }: Pro
       <View
         testID={testID ?? 'bubble-user'}
         style={{
-          alignSelf: I18nManager.isRTL ? 'flex-start' : 'flex-end',
+          // `flex-end` is already the *logical* end side: RN mirrors flex
+          // alignment itself under RTL, so branching on `I18nManager.isRTL`
+          // here would double-flip and push the user's bubble to the wrong
+          // side in Hebrew.
+          alignSelf: 'flex-end',
           maxWidth: '80%',
           backgroundColor: tokens.color.surfaceTint,
           borderRadius: tokens.radius.bubble,
@@ -41,7 +45,7 @@ export function Bubble({ role, text, streaming, showAvatar = true, testID }: Pro
       testID={testID ?? 'bubble-assistant'}
       style={{ flexDirection: 'row', gap: tokens.space.sm, maxWidth: '90%', marginBottom: tokens.space.md }}
     >
-      {showAvatar ? <Avatar size="sm" /> : <View style={{ width: 32 }} />}
+      {showAvatar ? <Avatar size="sm" /> : <View style={{ width: AVATAR_SIZES.sm }} />}
       <View style={{ flex: 1, paddingTop: tokens.space.xs }}>
         {text ? (
           <Text>

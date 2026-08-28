@@ -494,7 +494,10 @@ export type Database = {
     }
     Functions: {
       add_spend: { Args: { p_usd: number }; Returns: undefined }
-      check_and_increment_usage: { Args: { p_user: string }; Returns: number }
+      check_and_increment_usage: {
+        Args: { p_limit?: number; p_user: string }
+        Returns: number
+      }
       today_quote: {
         Args: { p_user: string }
         Returns: {

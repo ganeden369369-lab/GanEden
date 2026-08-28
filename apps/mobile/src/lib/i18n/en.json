@@ -51,6 +51,7 @@
     "capHint": "Come back tomorrow for more time with Eden",
     "errorGeneric": "Something went wrong. Please try again.",
     "retry": "Try again",
+    "partial": "(cut off)",
     "typing": "Eden is typing…",
     "deleteChat": "Delete chat",
     "askEden": "Ask Eden",

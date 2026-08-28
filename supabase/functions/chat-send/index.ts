@@ -71,21 +71,90 @@ Deno.serve(async (req) => {
 
   const admin = adminClient();
 
-  // --- 2. free-tier cap + global budget ----------------------------------
-  const { data: remaining, error: usageError } = await admin.rpc('check_and_increment_usage', {
-    p_user: userId,
-  });
-  if (usageError) {
-    console.error('chat-send: check_and_increment_usage failed', usageError.message);
-    return jsonResponse(500, { error: 'internal' });
-  }
-  if (remaining === -1) {
-    const sse = createSse();
-    sse.send('cap', { remaining: 0 });
-    sse.close();
-    return sse.response;
+  // The steps below are ordered so that nothing irreversible happens until
+  // the request is known-good: ownership and retry validation (which can
+  // still answer 404/400) run first, then the context load, and only then
+  // the budget check and `check_and_increment_usage` — so a request that
+  // was going to be rejected never burns a message off the daily cap, and
+  // never creates a chat or deletes a row.
+
+  // --- 2. verify the chat (existing chats only; a new one is created
+  //        alongside the user message, once the cap has been cleared) ----
+  let existingChatId: string | null = null;
+  if (requestedChatId) {
+    const { data: chat, error: chatReadError } = await admin
+      .from('chats')
+      .select('id')
+      .eq('id', requestedChatId)
+      .eq('user_id', userId)
+      .maybeSingle();
+    if (chatReadError) {
+      console.error('chat-send: failed to read chat', chatReadError.message);
+      return jsonResponse(500, { error: 'internal' });
+    }
+    if (!chat) {
+      return jsonResponse(404, { error: 'not_found' });
+    }
+    existingChatId = chat.id;
   }
 
+  // --- 3. retry: reuse the last user message instead of inserting a
+  //        duplicate, and drop the failed assistant rows it produced ------
+  let reuseUserMessageId: string | null = null;
+  let failedAssistantIds: string[] = [];
+  if (retryOfMessageId && existingChatId) {
+    const { data: lastMessage, error: lastMessageError } = await admin
+      .from('messages')
+      .select('id, role, user_id, content, created_at')
+      .eq('chat_id', existingChatId)
+      .eq('role', 'user')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (lastMessageError) {
+      console.error('chat-send: failed to read last user message for retry', lastMessageError.message);
+      return jsonResponse(500, { error: 'internal' });
+    }
+
+    // Everything the failed attempt left behind after that user turn. A
+    // valid retry has only failed assistant rows here (often exactly one,
+    // sometimes none when the attempt died before persisting anything).
+    let trailing: Array<{ id: string; role: string; status: string }> = [];
+    if (lastMessage) {
+      const { data: trailingRows, error: trailingError } = await admin
+        .from('messages')
+        .select('id, role, status')
+        .eq('chat_id', existingChatId)
+        .gt('created_at', lastMessage.created_at)
+        .order('created_at', { ascending: true });
+      if (trailingError) {
+        console.error('chat-send: failed to read trailing messages for retry', trailingError.message);
+        return jsonResponse(500, { error: 'internal' });
+      }
+      trailing = trailingRows ?? [];
+    }
+
+    if (!isValidRetryMessage(lastMessage, trailing, retryOfMessageId, userId, text)) {
+      return jsonResponse(400, { error: 'bad_request' });
+    }
+    reuseUserMessageId = lastMessage!.id;
+    failedAssistantIds = trailing.map((row) => row.id);
+  }
+
+  // --- 4. context ------------------------------------------------------
+  // Loaded before the current turn's user message is inserted, so
+  // `recentMessages` naturally excludes it. A failure here (e.g. no
+  // profile row) is a normal 500 JSON response — nothing has streamed yet,
+  // so there's no SSE contract to honor.
+  let ctx: Awaited<ReturnType<typeof loadChatContext>>;
+  try {
+    ctx = await loadChatContext(admin, userId, existingChatId);
+  } catch (err) {
+    console.error('chat-send: failed to load context', err);
+    return jsonResponse(500, { error: 'internal' });
+  }
+
+  // --- 5. global budget + free-tier cap --------------------------------
   const todayIso = new Date().toISOString().slice(0, 10);
   const dailyBudget = Number(Deno.env.get('DAILY_BUDGET_USD') ?? '20');
   const { data: spendRow, error: spendReadError } = await admin
@@ -104,73 +173,53 @@ Deno.serve(async (req) => {
     return sse.response;
   }
 
-  // --- 3. resolve the chat -------------------------------------------
+  const { data: remaining, error: usageError } = await admin.rpc('check_and_increment_usage', {
+    p_user: userId,
+    p_limit: Number(Deno.env.get('FREE_DAILY_MESSAGES') ?? 5),
+  });
+  if (usageError) {
+    console.error('chat-send: check_and_increment_usage failed', usageError.message);
+    return jsonResponse(500, { error: 'internal' });
+  }
+  if (remaining === -1) {
+    const sse = createSse();
+    sse.send('cap', { remaining: 0 });
+    sse.close();
+    return sse.response;
+  }
+
+  // --- 6. the chat row (if new), the failed rows this retry replaces, and
+  //        the user message row -----------------------------------------
   let chatId: string;
-  if (requestedChatId) {
-    const { data: chat, error: chatReadError } = await admin
-      .from('chats')
-      .select('id')
-      .eq('id', requestedChatId)
-      .eq('user_id', userId)
-      .maybeSingle();
-    if (chatReadError) {
-      console.error('chat-send: failed to read chat', chatReadError.message);
-      return jsonResponse(500, { error: 'internal' });
-    }
-    if (!chat) {
-      return jsonResponse(404, { error: 'not_found' });
-    }
-    chatId = chat.id;
-  } else {
-    const { data: newChat, error: chatError } = await admin
-      .from('chats')
-      .insert({ user_id: userId, title: null })
-      .select('id')
-      .single();
-    if (chatError || !newChat) {
-      console.error('chat-send: failed to create chat', chatError?.message);
-      return jsonResponse(500, { error: 'internal' });
-    }
-    chatId = newChat.id;
-  }
-
-  // --- 3b. retry: reuse the last message instead of inserting a duplicate ---
-  let reuseUserMessageId: string | null = null;
-  if (retryOfMessageId) {
-    const { data: lastMessage, error: lastMessageError } = await admin
-      .from('messages')
-      .select('id, role, user_id, content')
-      .eq('chat_id', chatId)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    if (lastMessageError) {
-      console.error('chat-send: failed to read last message for retry', lastMessageError.message);
-      return jsonResponse(500, { error: 'internal' });
-    }
-    if (!isValidRetryMessage(lastMessage, retryOfMessageId, userId, text)) {
-      return jsonResponse(400, { error: 'bad_request' });
-    }
-    reuseUserMessageId = lastMessage!.id;
-  }
-
-  // --- 4. context (before inserting the current turn's user message, so
-  //        recentMessages naturally excludes it) + the user message row ---
-  // Both are wrapped together: a profile-load failure inside
-  // loadChatContext (e.g. no profile row) or an insert failure must return
-  // a normal 500 JSON response — nothing has streamed yet, so there's no
-  // SSE contract to honor here.
-  let ctx: Awaited<ReturnType<typeof loadChatContext>>;
   let userMessageId: string;
   try {
-    ctx = await loadChatContext(admin, userId, chatId);
+    if (failedAssistantIds.length > 0) {
+      // Service role: the failed assistant turn(s) this retry replaces are
+      // removed before generating, so the chat never accumulates dead rows
+      // and `messages` stays a clean user/assistant alternation.
+      const { error: deleteError } = await admin.from('messages').delete().in('id', failedAssistantIds);
+      if (deleteError) throw deleteError;
+    }
+
+    if (existingChatId) {
+      chatId = existingChatId;
+    } else {
+      const { data: newChat, error: chatError } = await admin
+        .from('chats')
+        .insert({ user_id: userId, title: null })
+        .select('id')
+        .single();
+      if (chatError || !newChat) {
+        throw chatError ?? new Error('chat insert returned no row');
+      }
+      chatId = newChat.id;
+    }
 
     if (reuseUserMessageId) {
-      // Already persisted from the failed attempt being retried — reusing
-      // it means `loadChatContext`'s recentMessages (unlike the fresh-send
-      // path) DOES already include this exact turn, since it was loaded
-      // straight from the DB; the caller strips it back off below before
-      // building the provider's message list.
+      // Already persisted by the failed attempt being retried — reusing it
+      // means `loadChatContext`'s recentMessages (unlike the fresh-send
+      // path) DOES already include this exact turn plus the rows just
+      // deleted; both are stripped back off below.
       userMessageId = reuseUserMessageId;
     } else {
       const { data: userMessage, error: userMessageError } = await admin
@@ -184,14 +233,14 @@ Deno.serve(async (req) => {
       userMessageId = userMessage.id;
     }
   } catch (err) {
-    console.error('chat-send: failed to load context / insert user message', err);
+    console.error('chat-send: failed to create the chat / user message', err);
     return jsonResponse(500, { error: 'internal' });
   }
 
   const provider = getProvider(Deno.env.toObject());
   const language = ctx.profile.language as Language;
 
-  // --- 5. stream the reply over SSE ---------------------------------
+  // --- 7. stream the reply over SSE ---------------------------------
   const sse = createSse();
   sse.send('meta', {
     chatId,
@@ -212,6 +261,14 @@ Deno.serve(async (req) => {
         if (chatRow && !chatRow.title) {
           const titlePrompt = buildTitlePrompt({ language, firstUserMessage: text });
           const titleResult = await provider.complete({ ...titlePrompt, maxTokens: 30 });
+          // Titling is a real provider call — bill it like any other, so
+          // the daily kill-switch sees the full cost of a turn.
+          const { error: titleSpendError } = await admin.rpc('add_spend', {
+            p_usd: estimateUsd(titleResult.model, titleResult.inputTokens, titleResult.outputTokens),
+          });
+          if (titleSpendError) {
+            console.error('chat-send: add_spend failed (title)', titleSpendError.message);
+          }
           const sanitized = sanitizeTitle(titleResult.text);
           if (sanitized) {
             await admin.from('chats').update({ title: sanitized }).eq('id', chatId);
@@ -228,11 +285,14 @@ Deno.serve(async (req) => {
     };
 
     try {
-      // On a retry, `ctx.recentMessages` already ends with this exact turn
-      // (it was persisted by the attempt being retried, before this
-      // request ever ran) — drop it here so it isn't sent to the provider
-      // twice.
-      const priorMessages = reuseUserMessageId ? ctx.recentMessages.slice(0, -1) : ctx.recentMessages;
+      // On a retry, `ctx.recentMessages` was loaded before the failed
+      // assistant rows were deleted, and already ends with this exact user
+      // turn (persisted by the attempt being retried, before this request
+      // ever ran) — drop both tails here so the provider sees neither the
+      // duplicated user turn nor the failed reply it is replacing.
+      const priorMessages = reuseUserMessageId
+        ? ctx.recentMessages.slice(0, -(1 + failedAssistantIds.length))
+        : ctx.recentMessages;
       const messages: ChatTurn[] = [...priorMessages, { role: 'user', content: text }];
 
       const result = await provider.streamChat({
@@ -387,25 +447,29 @@ Deno.serve(async (req) => {
         });
         if (partialInsertError) {
           console.error('chat-send: failed to persist partial message', partialInsertError.message);
-        } else if (aborted) {
+        } else {
           // No resolved `result` (the provider call threw before
           // finishing) — estimate output tokens from the streamed
           // character count (~4 chars/token, a common rough rule of
           // thumb) against the configured chat model, so a real
           // generation that got cut off still shows up in spend_daily
-          // instead of costing nothing.
+          // instead of costing nothing. This holds whether the throw came
+          // from a client abort or a genuine provider failure: the tokens
+          // were generated (and billed by the provider) either way.
           const estimatedModel = Deno.env.get('CHAT_MODEL') ?? 'claude-sonnet-5';
           const estimatedUsd = estimateUsd(estimatedModel, 0, Math.ceil(streamedText.length / 4));
           const { error: spendError } = await admin.rpc('add_spend', { p_usd: estimatedUsd });
           if (spendError) {
-            console.error('chat-send: add_spend failed (aborted, estimated)', spendError.message);
+            console.error('chat-send: add_spend failed (estimated)', spendError.message);
           }
 
-          const edgeRuntime = getEdgeRuntime();
-          if (edgeRuntime) {
-            edgeRuntime.waitUntil(runAfterTurn(streamedText));
-          } else {
-            await runAfterTurn(streamedText);
+          if (aborted) {
+            const edgeRuntime = getEdgeRuntime();
+            if (edgeRuntime) {
+              edgeRuntime.waitUntil(runAfterTurn(streamedText));
+            } else {
+              await runAfterTurn(streamedText);
+            }
           }
         }
       }

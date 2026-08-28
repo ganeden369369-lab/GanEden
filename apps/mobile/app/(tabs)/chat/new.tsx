@@ -43,6 +43,17 @@ export default function NewChatScreen() {
     }
   };
 
+  // The `'new'` store entry outlives this screen (it is keyed by a constant,
+  // not by a chat id), so a cap or error banner from a previous visit would
+  // otherwise still be showing the next time the user opens a new chat.
+  // Declared before the seed effect so the reset can never wipe the seeded
+  // turn's own streaming state.
+  useEffect(() => {
+    const { reset } = useChatStream.getState();
+    reset(NEW_CHAT_KEY);
+    return () => reset(NEW_CHAT_KEY);
+  }, []);
+
   useEffect(() => {
     if (seed && !seedHandled.current) {
       seedHandled.current = true;

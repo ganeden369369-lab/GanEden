@@ -31,6 +31,9 @@ export function useSendMessage() {
       start(activeKey);
 
       let resolvedChatId: string | null = chatId ?? null;
+      // Work kicked off from inside a frame handler that the mutation must
+      // still wait for before it resolves (see the `done` case).
+      const pending: Array<Promise<void>> = [];
 
       const handleEvent = (evt: ChatSendEvent): void => {
         switch (evt.event) {
@@ -46,13 +49,25 @@ export function useSendMessage() {
           case 'delta':
             appendDelta(activeKey, evt.data.text);
             break;
-          case 'done':
-            finish(activeKey);
-            if (resolvedChatId) {
-              void queryClient.invalidateQueries({ queryKey: ['messages', resolvedChatId] });
-            }
-            void queryClient.invalidateQueries({ queryKey: ['chats'] });
+          case 'done': {
+            // `finish` clears the streaming bubble, so the persisted reply
+            // has to be on screen first — `invalidateQueries` resolves once
+            // the active refetch settles, and only then is it safe to drop
+            // the streamed text. Finishing first makes the reply blink out
+            // and back in.
+            const doneKey = activeKey;
+            const doneChatId = resolvedChatId;
+            pending.push(
+              (async () => {
+                if (doneChatId) {
+                  await queryClient.invalidateQueries({ queryKey: ['messages', doneChatId] });
+                }
+                finish(doneKey);
+                await queryClient.invalidateQueries({ queryKey: ['chats'] });
+              })(),
+            );
             break;
+          }
           case 'cap':
             cap(activeKey);
             break;
@@ -68,6 +83,8 @@ export function useSendMessage() {
         fail(activeKey, err instanceof Error ? err.message : String(err));
         throw err;
       }
+
+      await Promise.all(pending);
 
       return { chatId: resolvedChatId };
     },

@@ -1,7 +1,18 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Database, Language } from '@gan-eden/shared';
 import { buildMemoryExtractionInput, MemoryExtractionSchema } from '@gan-eden/prompts';
-import type { AiProvider } from './ai.ts';
+import { estimateUsd, type AiProvider } from './ai.ts';
+
+/**
+ * Hard ceiling on stored facts per user. At the cap, extraction still runs
+ * and the summary is still refreshed (so nothing is forgotten), but no new
+ * fact rows are inserted — unbounded growth would inflate every extraction
+ * prompt and, through the summary, every chat turn.
+ */
+const MAX_FACTS = 100;
+
+/** How many of the newest facts the extraction prompt is allowed to see. */
+const PROMPT_FACTS = 40;
 
 /** Strips ```json ... ``` / ``` ... ``` fences a model sometimes wraps JSON in. */
 function stripCodeFences(text: string): string {
@@ -53,9 +64,13 @@ export async function extractAndStoreMemory(
     const { data: existingFactRows, error: factsReadError } = await admin
       .from('memory_facts')
       .select('text')
-      .eq('user_id', userId);
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
     if (factsReadError) throw factsReadError;
+    // Newest first — the whole set is still used for dedup and the summary
+    // hash, but only the newest slice is shown to the model.
     const existingFacts = (existingFactRows ?? []).map((row) => row.text);
+    const atFactCap = existingFacts.length >= MAX_FACTS;
 
     const { data: summaryRow, error: summaryReadError } = await admin
       .from('memory_summaries')
@@ -68,11 +83,18 @@ export async function extractAndStoreMemory(
     const { system, user } = buildMemoryExtractionInput({
       language,
       existingSummary,
-      existingFacts,
+      existingFacts: existingFacts.slice(0, PROMPT_FACTS),
       exchange,
     });
 
     const result = await provider.complete({ system, user, maxTokens: 700 });
+    const { error: spendError } = await admin.rpc('add_spend', {
+      p_usd: estimateUsd(result.model, result.inputTokens, result.outputTokens),
+    });
+    if (spendError) {
+      console.error('extractAndStoreMemory: add_spend failed', spendError.message);
+    }
+
     const parsed = MemoryExtractionSchema.safeParse(JSON.parse(stripCodeFences(result.text)));
     if (!parsed.success) {
       console.error('extractAndStoreMemory: schema validation failed', parsed.error.message);
@@ -80,7 +102,11 @@ export async function extractAndStoreMemory(
     }
 
     const existingLower = new Set(existingFacts.map((f) => f.toLowerCase()));
-    const newFacts = parsed.data.facts.filter((f) => !existingLower.has(f.text.toLowerCase()));
+    // At the cap the summary still gets refreshed below — only new fact
+    // rows are dropped.
+    const newFacts = atFactCap
+      ? []
+      : parsed.data.facts.filter((f) => !existingLower.has(f.text.toLowerCase()));
 
     if (newFacts.length > 0) {
       const { error: insertError } = await admin.from('memory_facts').insert(
