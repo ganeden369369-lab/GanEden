@@ -407,6 +407,24 @@ export type Database = {
         }
         Relationships: []
       }
+      push_log: {
+        Row: {
+          date: string
+          sent_at: string
+          user_id: string
+        }
+        Insert: {
+          date: string
+          sent_at?: string
+          user_id: string
+        }
+        Update: {
+          date?: string
+          sent_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       push_tokens: {
         Row: {
           created_at: string
@@ -498,6 +516,7 @@ export type Database = {
         Args: { p_limit?: number; p_user: string }
         Returns: number
       }
+      future_quote_count: { Args: { p_user: string }; Returns: number }
       today_quote: {
         Args: { p_user: string }
         Returns: {

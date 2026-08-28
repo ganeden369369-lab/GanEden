@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod';
 import type { z } from 'zod';
+import { GOALS } from '@gan-eden/shared';
 
 export interface ChatTurn {
   role: 'user' | 'assistant';
@@ -206,9 +207,12 @@ function extractTitle(userText: string): string {
 
 /**
  * `kind: 'quotes'` prompts pass the requested batch as one `date |
- * personalDay | theme` line per day (see `packages/prompts/src/quotes.ts`,
- * Task 2). Blank/malformed lines are skipped rather than throwing — the
- * mock never fails a request, it just produces fewer rows.
+ * personalDay | theme` line per day (see `buildQuotesPrompt`,
+ * `packages/prompts/src/quotes.ts`). Blank/malformed lines are skipped
+ * rather than throwing — the mock never fails a request, it just produces
+ * fewer rows. When a line's theme segment is itself missing/blank, this
+ * falls back to a real `GOALS` value (not an arbitrary string) so the
+ * emitted quote still validates against `QuoteBatchSchema`'s `z.enum(GOALS)`.
  */
 function parseQuotePlanLines(userText: string): Array<{ date: string; personalDay: string; theme: string }> {
   return userText
@@ -217,7 +221,7 @@ function parseQuotePlanLines(userText: string): Array<{ date: string; personalDa
     .filter((line) => /^\d{4}-\d{2}-\d{2}\s*\|/.test(line))
     .map((line) => {
       const [date, personalDay, theme] = line.split('|').map((part) => part.trim());
-      return { date: date ?? '', personalDay: personalDay || '', theme: theme || 'growth' };
+      return { date: date ?? '', personalDay: personalDay || '', theme: theme || GOALS[0] };
     });
 }
 

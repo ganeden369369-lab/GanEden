@@ -1,20 +1,7 @@
 import { strict as assert } from 'node:assert';
 import { z } from 'zod';
-import { MemoryExtractionSchema, buildMemoryExtractionInput, buildTitlePrompt } from '@gan-eden/prompts';
+import { MemoryExtractionSchema, QuoteBatchSchema, buildMemoryExtractionInput, buildTitlePrompt } from '@gan-eden/prompts';
 import { MockProvider, ProviderError, estimateUsd, getProvider, usageOf } from './ai.ts';
-
-/** Local stand-in for `packages/prompts/src/quotes.ts`'s `QuoteBatchSchema` (Task 2) — same shape, defined here so Task 1 doesn't depend on Task 2. */
-const QuoteBatchSchema = z.object({
-  quotes: z
-    .array(
-      z.object({
-        date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-        text: z.string().min(1).max(200),
-        theme: z.string().min(1),
-      }),
-    )
-    .min(1),
-});
 
 Deno.test('getProvider defaults to the mock provider when AI_PROVIDER is unset', () => {
   const provider = getProvider({});
@@ -250,9 +237,12 @@ const NO_EMOJI = /\p{Extended_Pictographic}/u;
 Deno.test('MockProvider.complete with kind:"quotes" builds one <=200-char, emoji-free quote per date, containing the first name', async () => {
   const provider = new MockProvider();
   const system = ['You are Eden...', 'About this user:', 'Name: Maya'].join('\n');
-  const user = ['Plan:', '2026-08-28 | 5 | career', '2026-08-29 | 6 | relationships', '2026-08-30 | 1 | growth'].join(
-    '\n',
-  );
+  const user = [
+    'Plan:',
+    '2026-08-28 | 5 | improve_relationship',
+    '2026-08-29 | 6 | grow_as_woman',
+    '2026-08-30 | 1 | confidence',
+  ].join('\n');
 
   const result = await provider.complete({
     system,
@@ -267,6 +257,7 @@ Deno.test('MockProvider.complete with kind:"quotes" builds one <=200-char, emoji
   const dates = result.data!.quotes.map((q) => q.date);
   assert.deepEqual(dates, ['2026-08-28', '2026-08-29', '2026-08-30']);
   for (const quote of result.data!.quotes) {
+    assert.ok(quote.text.length >= 20, `expected >=20 chars, got ${quote.text.length}: "${quote.text}"`);
     assert.ok(quote.text.length <= 200, `expected <=200 chars, got ${quote.text.length}: "${quote.text}"`);
     assert.ok(quote.text.includes('Maya'), `expected the quote to include the first name, got: "${quote.text}"`);
     assert.ok(!NO_EMOJI.test(quote.text), `expected no emoji, got: "${quote.text}"`);
@@ -276,7 +267,7 @@ Deno.test('MockProvider.complete with kind:"quotes" builds one <=200-char, emoji
 Deno.test('MockProvider.complete with kind:"quotes" skips malformed plan lines rather than throwing', async () => {
   const provider = new MockProvider();
   const system = 'You are Eden...';
-  const user = ['not a plan line', '', '2026-09-01 | 3 | health'].join('\n');
+  const user = ['not a plan line', '', '2026-09-01 | 3 | heal_past'].join('\n');
 
   const result = await provider.complete({
     system,
@@ -288,6 +279,25 @@ Deno.test('MockProvider.complete with kind:"quotes" skips malformed plan lines r
 
   assert.equal(result.data!.quotes.length, 1);
   assert.equal(result.data!.quotes[0]!.date, '2026-09-01');
+  assert.equal(result.data!.quotes[0]!.theme, 'heal_past');
+});
+
+Deno.test("MockProvider.complete with kind:\"quotes\" falls back to a real GOALS value when a line's theme segment is blank", async () => {
+  const provider = new MockProvider();
+  const system = 'You are Eden...';
+  // Trailing `|` with nothing after it -> an empty theme segment.
+  const user = '2026-09-02 | 4 | ';
+
+  const result = await provider.complete({
+    system,
+    user,
+    maxTokens: 2000,
+    schema: QuoteBatchSchema,
+    kind: 'quotes',
+  });
+
+  assert.equal(result.data!.quotes.length, 1);
+  assert.equal(result.data!.quotes[0]!.theme, 'find_partner');
 });
 
 Deno.test('MockProvider.complete throws ProviderError("parse") when schema-validated output does not satisfy the schema', async () => {
