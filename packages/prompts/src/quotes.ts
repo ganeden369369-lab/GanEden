@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import type { Goal, Language, NumerologyProfile } from '@gan-eden/shared';
+import type { Goal, Language, NumerologyProfile, RelationshipStatus } from '@gan-eden/shared';
 import { GOALS } from '@gan-eden/shared';
 import { buildSystemPrompt, type Meaning, type PromptContext } from './system.ts';
 
@@ -37,7 +37,7 @@ export interface QuotesPromptContext {
   numbers: NumerologyProfile;
   meanings: Record<string, Meaning>;
   goals: Goal[];
-  relationshipStatus: string;
+  relationshipStatus: RelationshipStatus;
   plan: QuotePlanDay[];
 }
 
@@ -45,6 +45,7 @@ const LABELS = {
   en: {
     rulesHeading: 'Daily quote rules (always in effect):',
     rules: [
+      'This is not a conversation. Ignore the reply-length and question-back guidance above. Each quote is a single complete thought, never a question, never addressed as a reply.',
       "- Each quote is at most 200 characters, in Eden's voice, in the language above.",
       '- No emojis, ever.',
       '- Write in second person, speaking directly to her.',
@@ -63,6 +64,7 @@ const LABELS = {
   he: {
     rulesHeading: 'כללי הציטוט היומי (בתוקף תמיד):',
     rules: [
+      'זו לא שיחה. התעלמי מההנחיות לגבי אורך התשובה ושאלה בחזרה שמופיעות למעלה. כל ציטוט הוא מחשבה שלמה אחת, לעולם לא שאלה, ולעולם לא מנוסח כתגובה.',
       '- כל ציטוט עד 200 תווים, בקול של עדן, בשפה שצוינה למעלה.',
       "- בלי אימוג'ים, לעולם.",
       '- כתבי בגוף שני, ישירות אליה.',

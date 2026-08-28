@@ -192,6 +192,34 @@ describe('buildQuotesPrompt', () => {
     expect(`${system}`).toMatch(/^שם:\s*מאיה$/m);
   });
 
+  it('overrides the reused chat-formatting rules (reply length, question-back) for both languages', () => {
+    const { system: en } = buildQuotesPrompt({
+      language: 'en',
+      firstName: 'Maya',
+      numbers,
+      meanings,
+      goals: ['find_partner'],
+      relationshipStatus: 'single',
+      plan: makePlan(),
+    });
+    expect(en).toContain(
+      'This is not a conversation. Ignore the reply-length and question-back guidance above. Each quote is a single complete thought, never a question, never addressed as a reply.',
+    );
+
+    const { system: he } = buildQuotesPrompt({
+      language: 'he',
+      firstName: 'מאיה',
+      numbers,
+      meanings,
+      goals: ['find_partner'],
+      relationshipStatus: 'single',
+      plan: makePlan(),
+    });
+    expect(he).toContain(
+      'זו לא שיחה. התעלמי מההנחיות לגבי אורך התשובה ושאלה בחזרה שמופיעות למעלה. כל ציטוט הוא מחשבה שלמה אחת, לעולם לא שאלה, ולעולם לא מנוסח כתגובה.',
+    );
+  });
+
   it('emits exactly `date | personalDay | theme` lines the mock provider can parse, one per plan day', () => {
     const plan = makePlan();
     const { user } = buildQuotesPrompt({
