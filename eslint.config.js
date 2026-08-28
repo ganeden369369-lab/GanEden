@@ -31,7 +31,7 @@ export default tseslint.config(
   },
   {
     // Node-executed ESM scripts (run directly via `node`, not bundled).
-    files: ['apps/mobile/.maestro/*.mjs'],
+    files: ['apps/mobile/.maestro/*.mjs', 'scripts/*.mjs'],
     languageOptions: {
       globals: {
         process: 'readonly',

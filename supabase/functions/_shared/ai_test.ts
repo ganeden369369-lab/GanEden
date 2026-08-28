@@ -95,6 +95,33 @@ Deno.test('MockProvider.complete returns schema-valid (empty) facts for a 2-char
   assert.deepEqual(parsed.facts, []);
 });
 
+Deno.test('MockProvider.complete extracts the CURRENT exchange, not a stale User: line embedded in a prior mock summary', async () => {
+  const provider = new MockProvider();
+
+  // Simulates turn 2+: `existingSummary` is turn 1's stored mock summary,
+  // which itself must never contain "User: ..." scaffold text (regression
+  // coverage for a bug where it did, and every later turn kept
+  // re-extracting turn 1's facts forever instead of the new exchange's).
+  const { system, user } = buildMemoryExtractionInput({
+    language: 'en',
+    existingSummary: 'Recent: User: this looks like an old exchange line, not real prose',
+    existingFacts: ['Hi Eden', 'I met someone new'],
+    exchange: { user: 'Continuing the same chat', assistant: 'Some reply text.' },
+  });
+
+  const result = await provider.complete({ system, user, maxTokens: 500 });
+  const parsed = MemoryExtractionSchema.parse(JSON.parse(result.text));
+
+  assert.ok(
+    parsed.facts.some((f) => f.text.includes('Continuing the same chat')),
+    `expected a fact derived from the new exchange, got: ${JSON.stringify(parsed.facts)}`,
+  );
+  assert.ok(
+    !parsed.summary.includes('old exchange line'),
+    `mock summary must not carry forward stale embedded prompt text, got: "${parsed.summary}"`,
+  );
+});
+
 Deno.test('MockProvider.complete returns a <=4-word title for a title prompt', async () => {
   const provider = new MockProvider();
   const { system, user } = buildTitlePrompt({
@@ -114,4 +141,9 @@ Deno.test('estimateUsd computes cost from the price table', () => {
   assert.equal(estimateUsd('claude-opus-5', 1_000_000, 1_000_000), 30);
   assert.equal(estimateUsd('claude-sonnet-5', 500_000, 0), 1);
   assert.equal(estimateUsd('unknown-model', 1_000_000, 1_000_000), 12);
+});
+
+Deno.test("estimateUsd('mock', ...) is always $0", () => {
+  assert.equal(estimateUsd('mock', 1_000_000, 1_000_000), 0);
+  assert.equal(estimateUsd('mock', 0, 0), 0);
 });

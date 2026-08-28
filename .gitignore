@@ -8,5 +8,6 @@ dist/
 !.env.local.example
 supabase/.temp/
 supabase/functions/.env.local
+supabase/functions/_vendor/
 coverage/
 .superpowers/

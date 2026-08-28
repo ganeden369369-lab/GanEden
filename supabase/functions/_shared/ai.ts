@@ -34,6 +34,8 @@ export interface AiProvider {
 const PRICE_TABLE: Record<string, { in: number; out: number }> = {
   'claude-sonnet-5': { in: 2, out: 10 },
   'claude-opus-5': { in: 5, out: 25 },
+  /** MockProvider's model id — local dev / tests never cost anything. */
+  mock: { in: 0, out: 0 },
 };
 
 export function estimateUsd(model: string, inputTokens: number, outputTokens: number): number {
@@ -90,9 +92,18 @@ function buildMockReply(lastUserMessage: string, name: string, lang: 'he' | 'en'
   ].join('\n\n');
 }
 
+/**
+ * The *current* turn's `User: ...` line from a `buildMemoryExtractionInput`
+ * prompt. Deliberately takes the LAST match, not the first: once a mock
+ * summary has been stored and fed back in as `existingSummary`, the
+ * "Existing summary: ..." section earlier in the prompt can itself contain
+ * literal `User:`/`Eden:` text (see `buildMockSummary`'s doc comment) —
+ * the real new exchange is always appended last by
+ * `buildMemoryExtractionInput`.
+ */
 function extractUserLine(userText: string): string {
-  const match = userText.match(/^User:\s*(.*)$/m);
-  return match?.[1]?.trim() ?? '';
+  const matches = [...userText.matchAll(/^User:\s*(.*)$/gm)];
+  return matches.at(-1)?.[1]?.trim() ?? '';
 }
 
 type FactCategory = 'person' | 'situation' | 'preference';
@@ -121,6 +132,19 @@ function splitIntoFacts(userLine: string): Array<{ category: FactCategory; text:
     category: pool[i % pool.length]!,
     text: text.slice(0, 300),
   }));
+}
+
+/**
+ * A deterministic, self-contained mock "summary" for the current exchange
+ * only — never the raw prompt text (which would embed `User:`/`Eden:`
+ * scaffold lines that `extractUserLine` would later have to see past once
+ * this summary is stored and re-fed as `existingSummary` on the next
+ * turn — a real, previously-shipped bug: memory extraction silently froze
+ * after the first turn because the stored "summary" polluted every
+ * following extraction prompt with a stale `User:` line).
+ */
+function buildMockSummary(userLine: string): string {
+  return userLine ? `Recent: ${truncate(userLine, 180)}` : 'No summary yet.';
 }
 
 function extractTitle(userText: string): string {
@@ -184,7 +208,7 @@ export class MockProvider implements AiProvider {
     const text = isMemoryPrompt
       ? JSON.stringify({
           facts: splitIntoFacts(extractUserLine(args.user)),
-          summary: args.user.slice(0, 200),
+          summary: buildMockSummary(extractUserLine(args.user)),
         })
       : extractTitle(args.user);
 

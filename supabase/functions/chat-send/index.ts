@@ -73,11 +73,15 @@ Deno.serve(async (req) => {
 
   const todayIso = new Date().toISOString().slice(0, 10);
   const dailyBudget = Number(Deno.env.get('DAILY_BUDGET_USD') ?? '20');
-  const { data: spendRow } = await admin
+  const { data: spendRow, error: spendReadError } = await admin
     .from('spend_daily')
     .select('usd')
     .eq('date', todayIso)
     .maybeSingle();
+  if (spendReadError) {
+    console.error('chat-send: failed to read spend_daily', spendReadError.message);
+    return jsonResponse(500, { error: 'internal' });
+  }
   if ((spendRow?.usd ?? 0) > dailyBudget) {
     const sse = createSse();
     sse.send('error', { code: 'budget', message: 'Daily budget exceeded.' });
@@ -88,12 +92,16 @@ Deno.serve(async (req) => {
   // --- 3. resolve the chat -------------------------------------------
   let chatId: string;
   if (requestedChatId) {
-    const { data: chat } = await admin
+    const { data: chat, error: chatReadError } = await admin
       .from('chats')
       .select('id')
       .eq('id', requestedChatId)
       .eq('user_id', userId)
       .maybeSingle();
+    if (chatReadError) {
+      console.error('chat-send: failed to read chat', chatReadError.message);
+      return jsonResponse(500, { error: 'internal' });
+    }
     if (!chat) {
       return jsonResponse(404, { error: 'not_found' });
     }
@@ -197,10 +205,7 @@ Deno.serve(async (req) => {
 
       await admin.from('chats').update({ last_message_at: new Date().toISOString() }).eq('id', chatId);
 
-      // The mock provider isn't in ai.ts's PRICE_TABLE, so estimateUsd would
-      // otherwise fall back to real Sonnet pricing for it — mock runs cost $0.
-      const usd =
-        result.model === 'mock' ? 0 : estimateUsd(result.model, result.inputTokens, result.outputTokens);
+      const usd = estimateUsd(result.model, result.inputTokens, result.outputTokens);
       const { error: spendError } = await admin.rpc('add_spend', { p_usd: usd });
       if (spendError) {
         console.error('chat-send: add_spend failed', spendError.message);
