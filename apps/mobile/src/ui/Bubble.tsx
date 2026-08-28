@@ -26,7 +26,7 @@ export function Bubble({ role, text, streaming, showAvatar = true, testID }: Pro
           alignSelf: I18nManager.isRTL ? 'flex-start' : 'flex-end',
           maxWidth: '80%',
           backgroundColor: tokens.color.surfaceTint,
-          borderRadius: 20,
+          borderRadius: tokens.radius.bubble,
           paddingHorizontal: tokens.space.lg,
           paddingVertical: tokens.space.md,
           marginBottom: tokens.space.md,

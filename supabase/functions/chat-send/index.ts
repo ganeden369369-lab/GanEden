@@ -6,13 +6,14 @@ import { estimateUsd, getProvider, type ChatTurn } from '../_shared/ai.ts';
 import { firstNameOf, loadChatContext } from '../_shared/context.ts';
 import { extractAndStoreMemory } from '../_shared/memory.ts';
 import { t } from '../_shared/copy.ts';
+import { isUuid, isValidRetryMessage } from '../_shared/validate.ts';
 
 interface ChatSendBody {
   chatId?: string;
   text?: string;
+  /** Set by the client's retry button: reuse this user message instead of inserting a duplicate. Must name the chat's actual last message — see `isValidRetryMessage`. */
+  retryOfMessageId?: string;
 }
-
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /** Present only when running under a Supabase-managed edge runtime (prod). Absent on plain Deno / `functions serve` in some versions. */
 function getEdgeRuntime(): { waitUntil: (promise: Promise<unknown>) => void } | undefined {
@@ -55,7 +56,16 @@ Deno.serve(async (req) => {
   }
   const requestedChatId =
     typeof body.chatId === 'string' && body.chatId.length > 0 ? body.chatId : null;
-  if (requestedChatId && !UUID_RE.test(requestedChatId)) {
+  if (requestedChatId && !isUuid(requestedChatId)) {
+    return jsonResponse(400, { error: 'bad_request' });
+  }
+  const retryOfMessageId =
+    typeof body.retryOfMessageId === 'string' && body.retryOfMessageId.length > 0
+      ? body.retryOfMessageId
+      : null;
+  // A retry only makes sense against an existing chat's last message — bad
+  // format, or a retry id with no chatId to retry it in, is a 400.
+  if (retryOfMessageId && (!isUuid(retryOfMessageId) || !requestedChatId)) {
     return jsonResponse(400, { error: 'bad_request' });
   }
 
@@ -124,6 +134,26 @@ Deno.serve(async (req) => {
     chatId = newChat.id;
   }
 
+  // --- 3b. retry: reuse the last message instead of inserting a duplicate ---
+  let reuseUserMessageId: string | null = null;
+  if (retryOfMessageId) {
+    const { data: lastMessage, error: lastMessageError } = await admin
+      .from('messages')
+      .select('id, role, user_id, content')
+      .eq('chat_id', chatId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (lastMessageError) {
+      console.error('chat-send: failed to read last message for retry', lastMessageError.message);
+      return jsonResponse(500, { error: 'internal' });
+    }
+    if (!isValidRetryMessage(lastMessage, retryOfMessageId, userId, text)) {
+      return jsonResponse(400, { error: 'bad_request' });
+    }
+    reuseUserMessageId = lastMessage!.id;
+  }
+
   // --- 4. context (before inserting the current turn's user message, so
   //        recentMessages naturally excludes it) + the user message row ---
   // Both are wrapped together: a profile-load failure inside
@@ -135,15 +165,24 @@ Deno.serve(async (req) => {
   try {
     ctx = await loadChatContext(admin, userId, chatId);
 
-    const { data: userMessage, error: userMessageError } = await admin
-      .from('messages')
-      .insert({ chat_id: chatId, user_id: userId, role: 'user', content: text, status: 'complete' })
-      .select('id')
-      .single();
-    if (userMessageError || !userMessage) {
-      throw userMessageError ?? new Error('user message insert returned no row');
+    if (reuseUserMessageId) {
+      // Already persisted from the failed attempt being retried — reusing
+      // it means `loadChatContext`'s recentMessages (unlike the fresh-send
+      // path) DOES already include this exact turn, since it was loaded
+      // straight from the DB; the caller strips it back off below before
+      // building the provider's message list.
+      userMessageId = reuseUserMessageId;
+    } else {
+      const { data: userMessage, error: userMessageError } = await admin
+        .from('messages')
+        .insert({ chat_id: chatId, user_id: userId, role: 'user', content: text, status: 'complete' })
+        .select('id')
+        .single();
+      if (userMessageError || !userMessage) {
+        throw userMessageError ?? new Error('user message insert returned no row');
+      }
+      userMessageId = userMessage.id;
     }
-    userMessageId = userMessage.id;
   } catch (err) {
     console.error('chat-send: failed to load context / insert user message', err);
     return jsonResponse(500, { error: 'internal' });
@@ -189,7 +228,12 @@ Deno.serve(async (req) => {
     };
 
     try {
-      const messages: ChatTurn[] = [...ctx.recentMessages, { role: 'user', content: text }];
+      // On a retry, `ctx.recentMessages` already ends with this exact turn
+      // (it was persisted by the attempt being retried, before this
+      // request ever ran) — drop it here so it isn't sent to the provider
+      // twice.
+      const priorMessages = reuseUserMessageId ? ctx.recentMessages.slice(0, -1) : ctx.recentMessages;
+      const messages: ChatTurn[] = [...priorMessages, { role: 'user', content: text }];
 
       const result = await provider.streamChat({
         system: buildSystemPrompt({

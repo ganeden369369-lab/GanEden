@@ -23,13 +23,20 @@ export default function NewChatScreen() {
   const [lastSent, setLastSent] = useState('');
   const seedHandled = useRef(false);
 
-  const handleSend = async (value: string): Promise<void> => {
+  const handleSend = async (value: string, retryOfMessageId?: string): Promise<void> => {
     const trimmed = value.trim();
     if (!trimmed || sendMessage.isPending) return;
     setText('');
     setLastSent(trimmed);
     try {
-      const { chatId } = await sendMessage.mutateAsync({ text: trimmed });
+      const { chatId } = await sendMessage.mutateAsync({ text: trimmed, retryOfMessageId });
+      // A resolved chatId means `meta` arrived — the user's message (and the
+      // streaming state, moved by `adopt` in useSendMessage) now live under
+      // the real chat id, whether this turn finished with `done` or with a
+      // post-meta `error`. Navigate either way: `[id].tsx` shows the reply
+      // or the error banner + retry from there. No chatId means the stream
+      // never got past `meta` (cap, or a network failure) — stay here, our
+      // own cap/error banner below already covers that.
       if (chatId) router.replace(('/(tabs)/chat/' + chatId) as Href);
     } catch {
       // surfaced via the streaming store's error state below
@@ -45,10 +52,15 @@ export default function NewChatScreen() {
   }, [seed]);
 
   const starters = profile ? starterPrompts(currentLanguage(), profile.goals, false) : [];
-  const isStreaming = stream.status === 'streaming';
+  // `sendMessage.isPending` covers the brief window right after `meta`
+  // arrives, where `adopt()` has already reset this `'new'` entry back to
+  // idle (its data now lives under the real chat id) but this screen hasn't
+  // navigated away yet — without it, the view would flash back to the
+  // starter-chips empty state mid-stream.
+  const isStreaming = stream.status === 'streaming' || sendMessage.isPending;
   const isCap = stream.status === 'cap';
   const isError = stream.status === 'error';
-  const showStarters = !seed && !isStreaming && !stream.streamingText && stream.status !== 'error';
+  const showStarters = !seed && !isStreaming && !stream.streamingText && stream.status !== 'error' && stream.status !== 'cap';
 
   return (
     <Screen scroll={false}>
@@ -82,7 +94,7 @@ export default function NewChatScreen() {
       {isError ? (
         <View style={{ marginBottom: tokens.space.md }}>
           <Text style={{ color: tokens.color.danger }}>{__DEV__ && stream.error ? stream.error : t('chat.errorGeneric')}</Text>
-          <Button title={t('chat.retry')} variant="ghost" onPress={() => void handleSend(lastSent)} />
+          <Button title={t('chat.retry')} variant="ghost" onPress={() => void handleSend(lastSent, stream.userMessageId)} />
         </View>
       ) : null}
       <Composer

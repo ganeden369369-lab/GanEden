@@ -29,6 +29,8 @@ export type ChatSendEvent =
 type SendMessageArgs = {
   chatId?: string;
   text: string;
+  /** The id of the chat's last (user) message to reuse instead of inserting a duplicate — set only for a retry after a failed turn. */
+  retryOfMessageId?: string;
   onEvent: (event: ChatSendEvent) => void;
   signal?: AbortSignal;
 };
@@ -41,7 +43,7 @@ type PreStreamErrorBody = { error?: string };
  * code (e.g. `'auth'`, `'bad_request'`, `'not_found'`, `'internal'`) when the
  * response is a plain JSON error returned before the stream opens.
  */
-export async function sendMessage({ chatId, text, onEvent, signal }: SendMessageArgs): Promise<void> {
+export async function sendMessage({ chatId, text, retryOfMessageId, onEvent, signal }: SendMessageArgs): Promise<void> {
   const {
     data: { session },
   } = await supabase.auth.getSession();
@@ -60,7 +62,7 @@ export async function sendMessage({ chatId, text, onEvent, signal }: SendMessage
       apikey: anonKey,
       'content-type': 'application/json',
     },
-    body: JSON.stringify({ chatId, text }),
+    body: JSON.stringify({ chatId, text, retryOfMessageId }),
     signal,
   });
 

@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { sendMessage, type ChatSendEvent } from './api';
 import { NEW_CHAT_KEY, useChatStream } from './store';
 
-type SendMessageInput = { chatId?: string; text: string; signal?: AbortSignal };
+type SendMessageInput = { chatId?: string; text: string; retryOfMessageId?: string; signal?: AbortSignal };
 /**
  * `chatId` is `null` only for the rare case of a brand-new chat that hits
  * the free-tier cap or the daily budget before the server ever assigns one
@@ -12,49 +12,60 @@ type SendMessageInput = { chatId?: string; text: string; signal?: AbortSignal };
 type SendMessageResult = { chatId: string | null };
 
 /**
- * Sends one chat message and streams the reply into `useChatStream`, keyed
- * by the chat it belongs to (`'new'` until the server assigns an id via the
- * `meta` event). Resolves once the stream ends, with the chat's id.
+ * Sends one chat message and streams the reply into `useChatStream`. Starts
+ * out keyed by `chatId ?? 'new'`; once a `meta` event resolves the chat's
+ * real id (always true except for a cap/error that lands before `meta` — see
+ * `SendMessageResult`), the store entry is moved (`adopt`) onto that real
+ * key and every event from then on — including a subsequent `error` —
+ * targets it, so a screen watching the real chat id (not just `new.tsx`,
+ * which is about to navigate away) sees the outcome. Resolves once the
+ * stream ends, with the chat's id.
  */
 export function useSendMessage() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ chatId, text, signal }: SendMessageInput): Promise<SendMessageResult> => {
-      const chatKey = chatId ?? NEW_CHAT_KEY;
-      const { start, appendDelta, finish, fail, cap } = useChatStream.getState();
-      start(chatKey);
+    mutationFn: async ({ chatId, text, retryOfMessageId, signal }: SendMessageInput): Promise<SendMessageResult> => {
+      let activeKey = chatId ?? NEW_CHAT_KEY;
+      const { start, appendDelta, finish, fail, cap, setMeta, adopt } = useChatStream.getState();
+      start(activeKey);
 
       let resolvedChatId: string | null = chatId ?? null;
 
       const handleEvent = (evt: ChatSendEvent): void => {
         switch (evt.event) {
-          case 'meta':
+          case 'meta': {
             resolvedChatId = evt.data.chatId;
+            if (activeKey !== resolvedChatId) {
+              adopt(activeKey, resolvedChatId);
+              activeKey = resolvedChatId;
+            }
+            setMeta(activeKey, { userMessageId: evt.data.userMessageId, remaining: evt.data.remaining });
             break;
+          }
           case 'delta':
-            appendDelta(chatKey, evt.data.text);
+            appendDelta(activeKey, evt.data.text);
             break;
           case 'done':
-            finish(chatKey);
+            finish(activeKey);
             if (resolvedChatId) {
               void queryClient.invalidateQueries({ queryKey: ['messages', resolvedChatId] });
             }
             void queryClient.invalidateQueries({ queryKey: ['chats'] });
             break;
           case 'cap':
-            cap(chatKey);
+            cap(activeKey);
             break;
           case 'error':
-            fail(chatKey, evt.data.message);
+            fail(activeKey, evt.data.message);
             break;
         }
       };
 
       try {
-        await sendMessage({ chatId, text, signal, onEvent: handleEvent });
+        await sendMessage({ chatId, text, retryOfMessageId, signal, onEvent: handleEvent });
       } catch (err) {
-        fail(chatKey, err instanceof Error ? err.message : String(err));
+        fail(activeKey, err instanceof Error ? err.message : String(err));
         throw err;
       }
 

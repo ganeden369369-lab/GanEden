@@ -25,13 +25,13 @@ export default function ChatConversationScreen() {
   const [lastSent, setLastSent] = useState('');
   const listRef = useRef<FlatList<Row>>(null);
 
-  const handleSend = async (value: string): Promise<void> => {
+  const handleSend = async (value: string, retryOfMessageId?: string): Promise<void> => {
     const trimmed = value.trim();
     if (!trimmed || !id || sendMessage.isPending) return;
     setText('');
     setLastSent(trimmed);
     try {
-      await sendMessage.mutateAsync({ chatId: id, text: trimmed });
+      await sendMessage.mutateAsync({ chatId: id, text: trimmed, retryOfMessageId });
     } catch {
       // surfaced via the streaming store's error state below
     }
@@ -62,14 +62,22 @@ export default function ChatConversationScreen() {
         data={data}
         keyExtractor={(m) => m.id}
         onContentSizeChange={() => listRef.current?.scrollToEnd({ animated: true })}
-        renderItem={({ item }) => (
-          <Bubble
-            role={item.role === 'user' ? 'user' : 'assistant'}
-            text={item.content}
-            streaming={item.id === 'streaming'}
-            testID={item.role === 'user' ? 'bubble-user' : 'bubble-assistant'}
-          />
-        )}
+        renderItem={({ item, index }) => {
+          // Group consecutive Eden replies under one avatar, like a real
+          // messaging thread — only the first assistant bubble in a run
+          // shows it.
+          const prev = data[index - 1];
+          const showAvatar = !(item.role === 'assistant' && prev?.role === 'assistant');
+          return (
+            <Bubble
+              role={item.role === 'user' ? 'user' : 'assistant'}
+              text={item.content}
+              streaming={item.id === 'streaming'}
+              showAvatar={showAvatar}
+              testID={item.role === 'user' ? 'bubble-user' : 'bubble-assistant'}
+            />
+          );
+        }}
       />
       {isCap ? (
         <View style={{ marginBottom: tokens.space.md }}>
@@ -82,7 +90,7 @@ export default function ChatConversationScreen() {
       {isError ? (
         <View style={{ marginBottom: tokens.space.md }}>
           <Text style={{ color: tokens.color.danger }}>{__DEV__ && stream.error ? stream.error : t('chat.errorGeneric')}</Text>
-          <Button title={t('chat.retry')} variant="ghost" onPress={() => void handleSend(lastSent)} />
+          <Button title={t('chat.retry')} variant="ghost" onPress={() => void handleSend(lastSent, stream.userMessageId)} />
         </View>
       ) : null}
       <Composer

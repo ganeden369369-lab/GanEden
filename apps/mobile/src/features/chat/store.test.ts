@@ -60,4 +60,56 @@ describe('useChatStream', () => {
 
     expect(useChatStream.getState().byChat.c4).toEqual({ streamingText: '', status: 'idle' });
   });
+
+  it('setMeta merges the userMessageId/remaining without disturbing streaming state', () => {
+    const { start, appendDelta, setMeta } = useChatStream.getState();
+    start('c5');
+    appendDelta('c5', 'partial reply');
+
+    setMeta('c5', { userMessageId: 'msg-1', remaining: 3 });
+
+    expect(useChatStream.getState().byChat.c5).toMatchObject({
+      status: 'streaming',
+      streamingText: 'partial reply',
+      userMessageId: 'msg-1',
+      remaining: 3,
+    });
+  });
+
+  it('adopt moves a chat entry onto a new key and resets the old key to idle', () => {
+    const { start, appendDelta, setMeta, adopt } = useChatStream.getState();
+    start('new');
+    appendDelta('new', 'Hello');
+    setMeta('new', { userMessageId: 'msg-1', remaining: 4 });
+
+    adopt('new', 'real-chat-id');
+
+    expect(useChatStream.getState().byChat['real-chat-id']).toMatchObject({
+      status: 'streaming',
+      streamingText: 'Hello',
+      userMessageId: 'msg-1',
+      remaining: 4,
+    });
+    expect(useChatStream.getState().byChat.new).toEqual({ streamingText: '', status: 'idle' });
+  });
+
+  it('adopt is a no-op when the keys are already the same', () => {
+    const { start, appendDelta, adopt } = useChatStream.getState();
+    start('c6');
+    appendDelta('c6', 'hi');
+
+    adopt('c6', 'c6');
+
+    expect(useChatStream.getState().byChat.c6).toMatchObject({ status: 'streaming', streamingText: 'hi' });
+  });
+
+  it('start clears a stale userMessageId from a previous turn under the same key', () => {
+    const { start, setMeta } = useChatStream.getState();
+    start('c7');
+    setMeta('c7', { userMessageId: 'msg-old' });
+
+    start('c7');
+
+    expect(useChatStream.getState().byChat.c7.userMessageId).toBeUndefined();
+  });
 });
