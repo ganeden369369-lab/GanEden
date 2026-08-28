@@ -1,4 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod';
+import type { z } from 'zod';
 
 export interface ChatTurn {
   role: 'user' | 'assistant';
@@ -13,6 +15,40 @@ export interface StreamResult {
   model: string;
 }
 
+/** Discriminates how `MockProvider.complete` should synthesize a deterministic reply — ignored by `AnthropicProvider`, which only branches on `schema`. */
+export type CompleteKind = 'memory' | 'title' | 'quotes' | 'compat';
+
+export interface CompleteArgs<T> {
+  system: string;
+  user: string;
+  maxTokens: number;
+  /** Anthropic `output_config.effort` — ignored by `MockProvider`. */
+  effort?: 'low' | 'medium' | 'high';
+  /** When given, the reply is parsed/validated as structured output and returned as `data`. */
+  schema?: z.ZodType<T>;
+  kind?: CompleteKind;
+  signal?: AbortSignal;
+}
+
+export interface CompleteResult<T> {
+  text: string;
+  data?: T;
+  inputTokens: number;
+  outputTokens: number;
+  model: string;
+}
+
+/** Thrown by `complete()` when a `schema` was given but the reply couldn't be parsed/validated against it. */
+export class ProviderError extends Error {
+  constructor(
+    public readonly code: 'parse',
+    message?: string,
+  ) {
+    super(message ?? code);
+    this.name = 'ProviderError';
+  }
+}
+
 export interface AiProvider {
   name: 'mock' | 'anthropic';
   streamChat(args: {
@@ -22,12 +58,7 @@ export interface AiProvider {
     onDelta: (t: string) => void;
     signal?: AbortSignal;
   }): Promise<StreamResult>;
-  complete(args: { system: string; user: string; maxTokens: number }): Promise<{
-    text: string;
-    inputTokens: number;
-    outputTokens: number;
-    model: string;
-  }>;
+  complete<T = unknown>(args: CompleteArgs<T>): Promise<CompleteResult<T>>;
 }
 
 /** claude-* model id -> $/MTok (input, output). */
@@ -155,6 +186,30 @@ function extractTitle(userText: string): string {
 }
 
 /**
+ * `kind: 'quotes'` prompts pass the requested batch as one `date |
+ * personalDay | theme` line per day (see `packages/prompts/src/quotes.ts`,
+ * Task 2). Blank/malformed lines are skipped rather than throwing — the
+ * mock never fails a request, it just produces fewer rows.
+ */
+function parseQuotePlanLines(userText: string): Array<{ date: string; personalDay: string; theme: string }> {
+  return userText
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => /^\d{4}-\d{2}-\d{2}\s*\|/.test(line))
+    .map((line) => {
+      const [date, personalDay, theme] = line.split('|').map((part) => part.trim());
+      return { date: date ?? '', personalDay: personalDay || '', theme: theme || 'growth' };
+    });
+}
+
+/** Deterministic, ≤200-char, emoji-free quote text for one day of a mock batch. */
+function buildMockQuoteText(date: string, personalDay: string, theme: string, name: string): string {
+  const namePrefix = name ? `${name}, ` : '';
+  const text = `${namePrefix}on ${date} your personal day ${personalDay} is calling you toward ${theme}. Trust the pace you are moving at.`;
+  return text.length > 200 ? text.slice(0, 200).trim() : text;
+}
+
+/**
  * Deterministic, network-free provider used for local dev and all
  * automated tests (`AI_PROVIDER=mock`, the default).
  */
@@ -197,23 +252,65 @@ export class MockProvider implements AiProvider {
     };
   }
 
-  async complete(args: { system: string; user: string; maxTokens: number }): Promise<{
-    text: string;
-    inputTokens: number;
-    outputTokens: number;
-    model: string;
-  }> {
-    const isMemoryPrompt = args.system.includes('"facts"');
+  async complete<T = unknown>(args: CompleteArgs<T>): Promise<CompleteResult<T>> {
+    // `kind` drives dispatch when given (memory.ts and chat-send's title
+    // call always pass it); the "facts" sniff is kept as a fallback so any
+    // caller that hasn't been updated yet still gets memory-shaped mock
+    // output instead of silently falling through to the title branch.
+    const kind: CompleteKind = args.kind ?? (args.system.includes('"facts"') ? 'memory' : 'title');
 
-    const text = isMemoryPrompt
-      ? JSON.stringify({
+    let text: string;
+    let data: T | undefined;
+
+    switch (kind) {
+      case 'memory': {
+        text = JSON.stringify({
           facts: splitIntoFacts(extractUserLine(args.user)),
           summary: buildMockSummary(extractUserLine(args.user)),
-        })
-      : extractTitle(args.user);
+        });
+        break;
+      }
+      case 'quotes': {
+        const name = extractFirstName(args.system) || extractFirstName(args.user);
+        const plan = parseQuotePlanLines(args.user);
+        const quotes = plan.map((day) => ({
+          date: day.date,
+          text: buildMockQuoteText(day.date, day.personalDay, day.theme, name),
+          theme: day.theme,
+        }));
+        data = { quotes } as unknown as T;
+        text = JSON.stringify(data);
+        break;
+      }
+      case 'compat': {
+        // Reserved for future schema-only callers with no dedicated mock
+        // shape yet — an empty object is the most schema-agnostic stand-in.
+        data = {} as T;
+        text = '{}';
+        break;
+      }
+      case 'title':
+      default: {
+        text = extractTitle(args.user);
+        break;
+      }
+    }
+
+    if (args.schema) {
+      const toValidate = data ?? JSON.parse(text);
+      const parsed = args.schema.safeParse(toValidate);
+      if (!parsed.success) {
+        throw new ProviderError(
+          'parse',
+          `MockProvider: kind '${kind}' output failed schema validation: ${parsed.error.message}`,
+        );
+      }
+      data = parsed.data;
+    }
 
     return Promise.resolve({
       text,
+      data,
       inputTokens: wordCount(args.system) + wordCount(args.user),
       outputTokens: wordCount(text),
       model: 'mock',
@@ -310,20 +407,78 @@ export class AnthropicProvider implements AiProvider {
     }
   }
 
-  async complete(args: { system: string; user: string; maxTokens: number }): Promise<{
-    text: string;
-    inputTokens: number;
-    outputTokens: number;
-    model: string;
-  }> {
-    let response: Anthropic.Message;
+  async complete<T = unknown>(args: CompleteArgs<T>): Promise<CompleteResult<T>> {
     try {
-      response = await this.client.messages.create({
-        model: this.genModel,
-        max_tokens: args.maxTokens,
-        system: args.system,
-        messages: [{ role: 'user', content: args.user }],
-      });
+      if (args.schema) {
+        // KNOWN CONCERN (see Task 1 report): `zodOutputFormat` is typed
+        // against `zod/v4`'s `ZodType`, not the classic `zod` (v3) package
+        // this repo's schemas are built with (`packages/prompts` needs to
+        // stay on zod 3 — see Global Constraints). The two are structurally
+        // incompatible: `zodOutputFormat` internally calls zod/v4's
+        // `toJSONSchema` on the object passed in, which reads v4-only
+        // internals a v3 `ZodType` doesn't have, so this throws at runtime
+        // for every real schema today, not just a type-checker complaint.
+        // Cast through `unknown` to keep the call shape exactly as spec'd
+        // (`client.messages.parse({ ..., output_config: { effort, format:
+        // zodOutputFormat(schema) } })`) — this throws at runtime (caught
+        // below, like any other provider-call failure) rather than being
+        // silently swallowed. Unexercised locally (no API key); needs a
+        // zod-version resolution before Task 2 turns on real Anthropic
+        // structured output for quotes.
+        const response = await this.client.messages.parse(
+          {
+            model: this.genModel,
+            max_tokens: args.maxTokens,
+            system: args.system,
+            messages: [{ role: 'user', content: args.user }],
+            thinking: { type: 'adaptive' },
+            output_config: {
+              effort: args.effort,
+              format: zodOutputFormat(args.schema as unknown as Parameters<typeof zodOutputFormat>[0]),
+            },
+          },
+          { signal: args.signal },
+        );
+
+        if (response.parsed_output === null) {
+          throw new ProviderError('parse', 'Anthropic returned no parsed_output for a structured complete() call');
+        }
+
+        const text = response.content
+          .filter((block): block is Anthropic.TextBlock => block.type === 'text')
+          .map((block) => block.text)
+          .join('');
+
+        return {
+          text,
+          data: response.parsed_output as T,
+          inputTokens: response.usage.input_tokens,
+          outputTokens: response.usage.output_tokens,
+          model: response.model,
+        };
+      }
+
+      const response = await this.client.messages.create(
+        {
+          model: this.genModel,
+          max_tokens: args.maxTokens,
+          system: args.system,
+          messages: [{ role: 'user', content: args.user }],
+        },
+        { signal: args.signal },
+      );
+
+      const text = response.content
+        .filter((block): block is Anthropic.TextBlock => block.type === 'text')
+        .map((block) => block.text)
+        .join('');
+
+      return {
+        text,
+        inputTokens: response.usage.input_tokens,
+        outputTokens: response.usage.output_tokens,
+        model: response.model,
+      };
     } catch (err) {
       // `complete()` has no error-shaped return value — callers handle the
       // throw — but the cause still needs to reach the logs.
@@ -332,18 +487,6 @@ export class AnthropicProvider implements AiProvider {
       }
       throw err;
     }
-
-    const text = response.content
-      .filter((block): block is Anthropic.TextBlock => block.type === 'text')
-      .map((block) => block.text)
-      .join('');
-
-    return {
-      text,
-      inputTokens: response.usage.input_tokens,
-      outputTokens: response.usage.output_tokens,
-      model: response.model,
-    };
   }
 }
 

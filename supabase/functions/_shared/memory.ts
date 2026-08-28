@@ -14,13 +14,6 @@ const MAX_FACTS = 100;
 /** How many of the newest facts the extraction prompt is allowed to see. */
 const PROMPT_FACTS = 40;
 
-/** Strips ```json ... ``` / ``` ... ``` fences a model sometimes wraps JSON in. */
-function stripCodeFences(text: string): string {
-  const trimmed = text.trim();
-  const fenced = trimmed.match(/^```(?:json)?\s*([\s\S]*?)\s*```$/i);
-  return fenced?.[1] ? fenced[1].trim() : trimmed;
-}
-
 async function sha256Hex(input: string): Promise<string> {
   const bytes = new TextEncoder().encode(input);
   const digest = await crypto.subtle.digest('SHA-256', bytes);
@@ -87,7 +80,13 @@ export async function extractAndStoreMemory(
       exchange,
     });
 
-    const result = await provider.complete({ system, user, maxTokens: 700 });
+    const result = await provider.complete({
+      system,
+      user,
+      maxTokens: 700,
+      schema: MemoryExtractionSchema,
+      kind: 'memory',
+    });
     const { error: spendError } = await admin.rpc('add_spend', {
       p_usd: estimateUsd(result.model, result.inputTokens, result.outputTokens),
     });
@@ -95,18 +94,18 @@ export async function extractAndStoreMemory(
       console.error('extractAndStoreMemory: add_spend failed', spendError.message);
     }
 
-    const parsed = MemoryExtractionSchema.safeParse(JSON.parse(stripCodeFences(result.text)));
-    if (!parsed.success) {
-      console.error('extractAndStoreMemory: schema validation failed', parsed.error.message);
+    if (!result.data) {
+      console.error('extractAndStoreMemory: schema validation failed (no parsed data)');
       return;
     }
+    const parsedData = result.data;
 
     const existingLower = new Set(existingFacts.map((f) => f.toLowerCase()));
     // At the cap the summary still gets refreshed below — only new fact
     // rows are dropped.
     const newFacts = atFactCap
       ? []
-      : parsed.data.facts.filter((f) => !existingLower.has(f.text.toLowerCase()));
+      : parsedData.facts.filter((f) => !existingLower.has(f.text.toLowerCase()));
 
     if (newFacts.length > 0) {
       const { error: insertError } = await admin.from('memory_facts').insert(
@@ -123,7 +122,7 @@ export async function extractAndStoreMemory(
       }
     }
 
-    await rebuildSummary(admin, userId, [...existingFacts, ...newFacts.map((f) => f.text)], parsed.data.summary);
+    await rebuildSummary(admin, userId, [...existingFacts, ...newFacts.map((f) => f.text)], parsedData.summary);
   } catch (err) {
     console.error('extractAndStoreMemory: failed', err);
   }

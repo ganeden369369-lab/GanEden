@@ -34,6 +34,15 @@ The Eden tab talks to the `chat-send` edge function.
 
 Deno tests for the shared edge-function code: `npx -y deno@2 test --allow-env --allow-net --config supabase/functions/deno.json supabase/functions/_shared`.
 
+**Edge function contract tests:** `supabase/functions/chat-send_test.ts` drives the real HTTP endpoint (creates a throwaway user + profile, signs in, exercises the happy path, a foreign-chat 404, a valid retry, an invalid retry, and the daily free cap, then deletes the user). It's skipped automatically unless `SUPABASE_URL`, `SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` are set. With `pnpm functions:serve` running in another terminal:
+
+```
+SUPABASE_URL=http://127.0.0.1:54321 \
+SUPABASE_ANON_KEY=<anon key from `npx -y supabase@latest status`> \
+SUPABASE_SERVICE_ROLE_KEY=<service role key from the same> \
+npx -y deno@2 test --allow-env --allow-net --config supabase/functions/deno.json supabase/functions/chat-send_test.ts
+```
+
 Real email is never sent locally — the OTP code lands in Mailpit (`http://127.0.0.1:54324`), not an inbox.
 
 ## E2E (Maestro)

@@ -260,7 +260,7 @@ Deno.serve(async (req) => {
         const { data: chatRow } = await admin.from('chats').select('title').eq('id', chatId).maybeSingle();
         if (chatRow && !chatRow.title) {
           const titlePrompt = buildTitlePrompt({ language, firstUserMessage: text });
-          const titleResult = await provider.complete({ ...titlePrompt, maxTokens: 30 });
+          const titleResult = await provider.complete({ ...titlePrompt, maxTokens: 30, kind: 'title' });
           // Titling is a real provider call — bill it like any other, so
           // the daily kill-switch sees the full cost of a turn.
           const { error: titleSpendError } = await admin.rpc('add_spend', {

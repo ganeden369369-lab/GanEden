@@ -1,6 +1,20 @@
 import { strict as assert } from 'node:assert';
+import { z } from 'zod';
 import { MemoryExtractionSchema, buildMemoryExtractionInput, buildTitlePrompt } from '@gan-eden/prompts';
-import { MockProvider, estimateUsd, getProvider } from './ai.ts';
+import { MockProvider, ProviderError, estimateUsd, getProvider } from './ai.ts';
+
+/** Local stand-in for `packages/prompts/src/quotes.ts`'s `QuoteBatchSchema` (Task 2) — same shape, defined here so Task 1 doesn't depend on Task 2. */
+const QuoteBatchSchema = z.object({
+  quotes: z
+    .array(
+      z.object({
+        date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+        text: z.string().min(1).max(200),
+        theme: z.string().min(1),
+      }),
+    )
+    .min(1),
+});
 
 Deno.test('getProvider defaults to the mock provider when AI_PROVIDER is unset', () => {
   const provider = getProvider({});
@@ -186,4 +200,115 @@ Deno.test('estimateUsd computes cost from the price table', () => {
 Deno.test("estimateUsd('mock', ...) is always $0", () => {
   assert.equal(estimateUsd('mock', 1_000_000, 1_000_000), 0);
   assert.equal(estimateUsd('mock', 0, 0), 0);
+});
+
+// --- complete(): schema/kind (Task 1) --------------------------------------
+
+Deno.test('MockProvider.complete with kind:"memory" + schema returns .data matching MemoryExtractionSchema', async () => {
+  const provider = new MockProvider();
+  const { system, user } = buildMemoryExtractionInput({
+    language: 'en',
+    existingSummary: '',
+    existingFacts: [],
+    exchange: {
+      user: 'My mother has been sick and it is stressing me out, I also started a new job.',
+      assistant: 'I hear you — that sounds like a lot to carry at once.',
+    },
+  });
+
+  const result = await provider.complete({
+    system,
+    user,
+    maxTokens: 500,
+    schema: MemoryExtractionSchema,
+    kind: 'memory',
+  });
+
+  assert.ok(result.data, 'expected .data to be set for a schema-bearing call');
+  assert.ok(result.data!.facts.length >= 1);
+  assert.ok(result.data!.summary.length > 0);
+  // .text still carries the same JSON, unchanged from the pre-schema shape.
+  assert.deepEqual(JSON.parse(result.text), result.data);
+});
+
+Deno.test('MockProvider.complete with kind:"title" (no schema) leaves .data undefined', async () => {
+  const provider = new MockProvider();
+  const { system, user } = buildTitlePrompt({
+    language: 'en',
+    firstUserMessage: 'I want to understand my life path number better please',
+  });
+
+  const result = await provider.complete({ system, user, maxTokens: 50, kind: 'title' });
+
+  assert.equal(result.data, undefined);
+  const words = result.text.trim().split(/\s+/).filter(Boolean);
+  assert.ok(words.length <= 4 && words.length >= 1);
+});
+
+const NO_EMOJI = /\p{Extended_Pictographic}/u;
+
+Deno.test('MockProvider.complete with kind:"quotes" builds one <=200-char, emoji-free quote per date, containing the first name', async () => {
+  const provider = new MockProvider();
+  const system = ['You are Eden...', 'About this user:', 'Name: Maya'].join('\n');
+  const user = ['Plan:', '2026-08-28 | 5 | career', '2026-08-29 | 6 | relationships', '2026-08-30 | 1 | growth'].join(
+    '\n',
+  );
+
+  const result = await provider.complete({
+    system,
+    user,
+    maxTokens: 2000,
+    schema: QuoteBatchSchema,
+    kind: 'quotes',
+  });
+
+  assert.ok(result.data, 'expected .data to be set for a schema-bearing call');
+  assert.equal(result.data!.quotes.length, 3);
+  const dates = result.data!.quotes.map((q) => q.date);
+  assert.deepEqual(dates, ['2026-08-28', '2026-08-29', '2026-08-30']);
+  for (const quote of result.data!.quotes) {
+    assert.ok(quote.text.length <= 200, `expected <=200 chars, got ${quote.text.length}: "${quote.text}"`);
+    assert.ok(quote.text.includes('Maya'), `expected the quote to include the first name, got: "${quote.text}"`);
+    assert.ok(!NO_EMOJI.test(quote.text), `expected no emoji, got: "${quote.text}"`);
+  }
+});
+
+Deno.test('MockProvider.complete with kind:"quotes" skips malformed plan lines rather than throwing', async () => {
+  const provider = new MockProvider();
+  const system = 'You are Eden...';
+  const user = ['not a plan line', '', '2026-09-01 | 3 | health'].join('\n');
+
+  const result = await provider.complete({
+    system,
+    user,
+    maxTokens: 2000,
+    schema: QuoteBatchSchema,
+    kind: 'quotes',
+  });
+
+  assert.equal(result.data!.quotes.length, 1);
+  assert.equal(result.data!.quotes[0]!.date, '2026-09-01');
+});
+
+Deno.test('MockProvider.complete throws ProviderError("parse") when schema-validated output does not satisfy the schema', async () => {
+  const provider = new MockProvider();
+  // MockProvider's kind:'memory' output is always {facts, summary} JSON — a
+  // schema demanding a field that can never appear guarantees a mismatch.
+  const impossibleSchema = z.object({ neverPresent: z.literal('nope') });
+
+  await assert.rejects(
+    () =>
+      provider.complete({
+        system: '"facts"',
+        user: 'User: hello there',
+        maxTokens: 50,
+        schema: impossibleSchema,
+        kind: 'memory',
+      }),
+    (err: unknown) => {
+      assert.ok(err instanceof ProviderError);
+      assert.equal((err as ProviderError).code, 'parse');
+      return true;
+    },
+  );
 });
