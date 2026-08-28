@@ -12,6 +12,8 @@ Sign in by email code → onboarding in four steps (Language → About: full nam
 - `npx -y supabase@latest status` — copy the `anon key` into `apps/mobile/.env` (create it from `apps/mobile/.env.example`; it already points at the local API URL).
 - `pnpm --filter @gan-eden/mobile start` — then open in Expo Go on your device/simulator.
 
+The app targets **Expo SDK 54**, so the plain **Expo Go build from the App Store works** — scan the QR code from `expo start` and it runs on an iPhone, no dev build or Apple Developer membership needed. The pin is deliberate (the App Store Expo Go is stuck on SDK 54); we move to the current SDK when Phase 5 switches to EAS development builds. See `docs/ARCHITECTURE.md` §3.1.
+
 There's no global Supabase CLI install — every command runs via `npx -y supabase@latest ...`.
 
 ## Scripts

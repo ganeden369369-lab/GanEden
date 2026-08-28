@@ -90,7 +90,7 @@ Tooling: pnpm workspaces, TypeScript strict everywhere, ESLint + Prettier, Husky
 
 | Concern | Choice |
 |---|---|
-| Runtime | Expo SDK (latest stable), **Expo Go for v1** (no custom native modules — see D7); the Expo web target (`expo start --web`) is also enabled, for visual review only — not a release target |
+| Runtime | Expo SDK 54 (pinned to what the App Store Expo Go supports as of 2026-08; upgrade to the current SDK when moving to EAS dev builds in Phase 5), **Expo Go for v1** (no custom native modules — see D7); the Expo web target (`expo start --web`) is also enabled, for visual review only — not a release target |
 | Navigation | Expo Router (file-based, typed routes) |
 | Styling | Inline styles from `src/ui/tokens.ts` via the design-system primitives in `src/ui` (NativeWind removed in Phase 2, unused), in the brand's rose-gold gradient accent, blush surfaces, and cream backgrounds (dark = plum/mocha) |
 | Motion | `react-native-reanimated` + `react-native-gesture-handler` (both in Expo Go) |
