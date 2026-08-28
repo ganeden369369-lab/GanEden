@@ -1,10 +1,12 @@
+import { useState } from 'react';
 import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { Avatar, Button, Card, Choice, Field, Icon, NumberBadge, QuoteCard, Screen, Text, tokens } from '../../src/ui';
+import { Avatar, Bubble, Button, Card, Choice, Composer, Field, Icon, NumberBadge, QuoteCard, Screen, StarterChip, Text, tokens } from '../../src/ui';
 import { setLanguage } from '../../src/lib/i18n';
 
 export default function Gallery() {
   const { i18n } = useTranslation();
+  const [composerValue, setComposerValue] = useState('');
   if (!__DEV__) return null;
   const lang = i18n.language;
   const row = { flexDirection: 'row' as const, gap: tokens.space.md, alignItems: 'center' as const, marginBottom: tokens.space.lg };
@@ -30,6 +32,16 @@ export default function Gallery() {
       <Card><Text variant="heading">Card</Text><Text tone="muted">Raised surface with 24 radius.</Text></Card>
       <View style={{ height: tokens.space.xl }} />
       <QuoteCard text="You were never too much. You were waiting for someone who could hold all of you." name="Maya" date="27.8" />
+      <View style={{ height: tokens.space.xl }} />
+      <Text variant="heading" style={{ marginBottom: tokens.space.md }}>Chat</Text>
+      <Bubble role="assistant" text="I see a lot of Life Path 7 energy here — steady, private, always thinking." />
+      <Bubble role="user" text="That feels right, actually." />
+      <Bubble role="assistant" text="Still writing" streaming showAvatar={false} />
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginBottom: tokens.space.lg }}>
+        <StarterChip label="What does my life path mean?" onPress={() => {}} />
+        <StarterChip label="Can we continue from last time?" onPress={() => {}} />
+      </View>
+      <Composer value={composerValue} onChangeText={setComposerValue} onSend={() => setComposerValue('')} placeholder="Message Eden…" />
     </Screen>
   );
 }

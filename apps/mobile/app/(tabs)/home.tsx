@@ -1,5 +1,7 @@
 import { personalCycles } from '@gan-eden/numerology';
-import { Screen, Text, tokens } from '../../src/ui';
+import { router, type Href } from 'expo-router';
+import { Pressable, View } from 'react-native';
+import { Avatar, Card, Icon, Screen, Text, tokens } from '../../src/ui';
 import { useProfile } from '../../src/features/profile/useProfile';
 import { useT } from '../../src/lib/i18n';
 import { todayIso } from '../../src/lib/dates';
@@ -20,6 +22,18 @@ export default function Home() {
       <Text tone="muted" style={{ marginTop: tokens.space.sm }}>
         {t('numbers.personalDay', { n: cycles.personalDay })}
       </Text>
+      <Pressable testID="home-ask-eden" onPress={() => router.push('/(tabs)/chat/new' as Href)} style={{ marginTop: tokens.space.xl }}>
+        <Card style={{ flexDirection: 'row', alignItems: 'center', gap: tokens.space.md }}>
+          <Avatar size="sm" />
+          <View style={{ flex: 1 }}>
+            <Text variant="heading">{t('chat.askEden')}</Text>
+            <Text variant="caption" tone="muted">
+              {t('chat.askEdenHint')}
+            </Text>
+          </View>
+          <Icon name="chevron-forward" flipInRtl />
+        </Card>
+      </Pressable>
     </Screen>
   );
 }

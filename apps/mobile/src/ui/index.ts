@@ -10,3 +10,6 @@ export { Icon } from './Icon';
 export { Screen } from './Screen';
 export { StepFrame } from './StepFrame';
 export { QuoteCard } from './QuoteCard';
+export { Bubble } from './Bubble';
+export { Composer } from './Composer';
+export { StarterChip } from './StarterChip';

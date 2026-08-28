@@ -50,6 +50,9 @@ importers:
       '@gan-eden/numerology':
         specifier: workspace:*
         version: link:../../packages/numerology
+      '@gan-eden/prompts':
+        specifier: workspace:*
+        version: link:../../packages/prompts
       '@gan-eden/shared':
         specifier: workspace:*
         version: link:../../packages/shared
