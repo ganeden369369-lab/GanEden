@@ -108,10 +108,16 @@ function splitIntoFacts(userLine: string): Array<{ category: FactCategory; text:
     .filter((s) => s.length >= 3)
     .slice(0, 2);
 
-  const pool: FactCategory[] = ['situation', 'preference'];
-  const source = segments.length > 0 ? segments : [userLine];
+  if (segments.length === 0) {
+    // Every segment (and thus the whole line) is shorter than the
+    // schema's 3-character minimum for a fact's text — nothing to
+    // extract. An empty facts array is schema-valid.
+    return [];
+  }
 
-  return source.map((text, i) => ({
+  const pool: FactCategory[] = ['situation', 'preference'];
+
+  return segments.map((text, i) => ({
     category: pool[i % pool.length]!,
     text: text.slice(0, 300),
   }));

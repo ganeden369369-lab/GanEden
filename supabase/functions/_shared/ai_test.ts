@@ -77,6 +77,24 @@ Deno.test('MockProvider.complete returns JSON parseable by MemoryExtractionSchem
   assert.equal(result.model, 'mock');
 });
 
+Deno.test('MockProvider.complete returns schema-valid (empty) facts for a 2-char user line', async () => {
+  const provider = new MockProvider();
+  const { system, user } = buildMemoryExtractionInput({
+    language: 'en',
+    existingSummary: '',
+    existingFacts: [],
+    exchange: {
+      user: 'hi',
+      assistant: 'Hi there!',
+    },
+  });
+
+  const result = await provider.complete({ system, user, maxTokens: 500 });
+  const parsed = MemoryExtractionSchema.parse(JSON.parse(result.text));
+
+  assert.deepEqual(parsed.facts, []);
+});
+
 Deno.test('MockProvider.complete returns a <=4-word title for a title prompt', async () => {
   const provider = new MockProvider();
   const { system, user } = buildTitlePrompt({
