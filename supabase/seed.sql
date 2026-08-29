@@ -1,0 +1,33 @@
+insert into public.content_meanings (number_type, value, language, title, body, approved) values
+('life_path', 1, 'en', 'The Leader', 'Independent, driven and original. Your path is about learning to lead without needing to control.', false),
+('life_path', 1, 'he', 'המובילה', 'עצמאית, נחושה ומקורית. הדרך שלך היא ללמוד להוביל בלי צורך לשלוט.', false),
+('life_path', 2, 'en', 'The Peacemaker', 'Sensitive, cooperative and intuitive. Your path is about partnership without losing yourself.', false),
+('life_path', 2, 'he', 'המפשרת', 'רגישה, משתפת פעולה ואינטואיטיבית. הדרך שלך היא שותפות בלי לאבד את עצמך.', false),
+('life_path', 3, 'en', 'The Creator', 'Expressive, joyful and social. Your path is about turning feelings into creation.', false),
+('life_path', 3, 'he', 'היוצרת', 'מבטאת, שמחה וחברותית. הדרך שלך היא להפוך רגש ליצירה.', false),
+('life_path', 4, 'en', 'The Builder', 'Grounded, loyal and practical. Your path is about building foundations that last.', false),
+('life_path', 4, 'he', 'הבונה', 'מחוברת לקרקע, נאמנה ומעשית. הדרך שלך היא לבנות יסודות שמחזיקים.', false),
+('life_path', 5, 'en', 'The Free Spirit', 'Curious, adaptable and magnetic. Your path is about freedom with commitment.', false),
+('life_path', 5, 'he', 'הרוח החופשית', 'סקרנית, גמישה ומגנטית. הדרך שלך היא חופש עם מחויבות.', false),
+('life_path', 6, 'en', 'The Nurturer', 'Loving, responsible and devoted. Your path is about giving without over-giving.', false),
+('life_path', 6, 'he', 'המטפחת', 'אוהבת, אחראית ומסורה. הדרך שלך היא לתת בלי לתת יותר מדי.', false),
+('life_path', 7, 'en', 'The Seeker', 'Deep, analytical and spiritual. Your path is about trusting what you cannot yet prove.', false),
+('life_path', 7, 'he', 'המחפשת', 'עמוקה, אנליטית ורוחנית. הדרך שלך היא לבטוח במה שעוד אי אפשר להוכיח.', false),
+('life_path', 8, 'en', 'The Powerhouse', 'Ambitious, capable and strong. Your path is about power that serves love.', false),
+('life_path', 8, 'he', 'הכוח', 'שאפתנית, מוכשרת וחזקה. הדרך שלך היא כוח שמשרת אהבה.', false),
+('life_path', 9, 'en', 'The Old Soul', 'Compassionate, wise and generous. Your path is about letting go to receive.', false),
+('life_path', 9, 'he', 'הנשמה הוותיקה', 'חומלת, חכמה ונדיבה. הדרך שלך היא לשחרר כדי לקבל.', false),
+('life_path', 11, 'en', 'The Illuminator', 'Intuitive and inspiring. Your path is about channeling sensitivity into light for others.', false),
+('life_path', 11, 'he', 'המאירה', 'אינטואיטיבית ומעוררת השראה. הדרך שלך היא להפוך רגישות לאור עבור אחרים.', false),
+('life_path', 22, 'en', 'The Master Builder', 'Visionary and practical. Your path is about turning big dreams into real structures.', false),
+('life_path', 22, 'he', 'הבונה הגדולה', 'בעלת חזון ומעשית. הדרך שלך היא להפוך חלומות גדולים למבנים אמיתיים.', false),
+('life_path', 33, 'en', 'The Master Teacher', 'Devoted and healing. Your path is about love as service.', false),
+('life_path', 33, 'he', 'המורה הגדולה', 'מסורה ומרפאה. הדרך שלך היא אהבה כשירות.', false);
+
+insert into public.quote_fallbacks (language, text, theme) values
+('en', 'You were never too much. You were waiting for someone who could hold all of you.', 'find_partner'),
+('en', 'The love you keep giving away is the love you are learning to give yourself.', 'grow_as_woman'),
+('en', 'Your numbers do not decide your story. They show you where your power already lives.', 'understand_numbers'),
+('he', 'מעולם לא היית יותר מדי. חיכית למישהו שיוכל להכיל את כולך.', 'find_partner'),
+('he', 'האהבה שאת ממשיכה לתת החוצה היא האהבה שאת לומדת לתת לעצמך.', 'grow_as_woman'),
+('he', 'המספרים שלך לא מחליטים את הסיפור שלך. הם מראים לך איפה הכוח שלך כבר גר.', 'understand_numbers');

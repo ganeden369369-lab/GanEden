@@ -1,0 +1,15 @@
+appId: host.exp.exponent   # Expo Go; switch to co.ganeden.app for dev builds
+---
+# Flow 1: launch the app, request an OTP code, and stop once the code
+# entry screen is visible. The 6-digit code is fetched from Mailpit by
+# run.sh between flow 1 and flow 2 (Maestro cannot pause mid-flow to
+# shell out), so this flow does not touch the `code`/`verify` fields.
+- launchApp
+- tapOn:
+    id: email
+- inputText: "${EMAIL}"
+- tapOn:
+    id: send-code
+- assertVisible:
+    id: code
+    timeout: 10000

@@ -1,0 +1,69 @@
+{
+  "app": { "name": "Gan Eden" },
+  "common": { "continue": "Continue", "back": "Back", "skip": "Skip", "retry": "Try again", "loadError": "Something went wrong loading your garden." },
+  "auth": {
+    "title": "Back to your inner Garden of Eden",
+    "emailLabel": "Your email",
+    "sendCode": "Send me a code",
+    "codeLabel": "6-digit code",
+    "verify": "Verify",
+    "sent": "We sent a code to {{email}}"
+  },
+  "onboarding": {
+    "language": { "title": "Choose your language", "he": "עברית", "en": "English" },
+    "about": {
+      "title": "Let’s begin with you",
+      "hint": "Your numbers are born from your full name and your birthday",
+      "nameLabel": "Full name, as on your ID",
+      "dobLabel": "Date of birth",
+      "dobInvalid": "Please enter a valid date, at least 18 years ago"
+    },
+    "status": {
+      "title": "Where are you in love right now?",
+      "single": "Single", "dating": "Dating", "relationship": "In a relationship", "married": "Married"
+    },
+    "goals": {
+      "title": "What are you here for?",
+      "subtitle": "Choose everything that speaks to you",
+      "find_partner": "Finding my partner",
+      "improve_relationship": "Improving my relationship",
+      "grow_as_woman": "Growing as a woman",
+      "heal_past": "Healing from the past",
+      "understand_numbers": "Understanding my numbers",
+      "confidence": "Confidence & self-worth"
+    },
+    "calculating": { "title": "Reading your numbers…" },
+    "reveal": { "title": "Your numbers, {{name}}", "cta": "Enter your garden", "recompute": "Redo my numbers" }
+  },
+  "numbers": {
+    "life_path": "Life Path", "expression": "Expression", "soul_urge": "Soul Urge",
+    "personality": "Personality", "birthday": "Birthday", "personalDay": "Personal day {{n}}"
+  },
+  "tabs": { "home": "Home", "chat": "Eden", "numbers": "Numbers", "me": "Me" },
+  "me": { "signOut": "Sign out", "language": "Language", "memoryRow": "What Eden remembers" },
+  "chat": {
+    "title": "Eden",
+    "new": "New chat",
+    "empty": "Start a conversation with Eden",
+    "composerPlaceholder": "Message Eden…",
+    "send": "Send",
+    "capReached": "You’ve reached today’s message limit",
+    "capHint": "Come back tomorrow for more time with Eden",
+    "errorGeneric": "Something went wrong. Please try again.",
+    "retry": "Try again",
+    "partial": "(cut off)",
+    "typing": "Eden is typing…",
+    "deleteChat": "Delete chat",
+    "askEden": "Ask Eden",
+    "askEdenHint": "About him, about you, about today"
+  },
+  "memory": {
+    "title": "Memory",
+    "empty": "Eden hasn’t remembered anything yet",
+    "delete": "Delete",
+    "hint": "What Eden remembers about you across your chats",
+    "people": "People",
+    "situations": "Situations",
+    "preferences": "Preferences"
+  }
+}

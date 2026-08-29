@@ -1,12 +1,20 @@
 {
   "pages": [
     {
-      "id": "en",
-      "name": "English"
+      "id": "en-onboarding",
+      "name": "English · Onboarding"
     },
     {
-      "id": "he",
-      "name": "Hebrew (RTL)"
+      "id": "en-app",
+      "name": "English · App"
+    },
+    {
+      "id": "he-onboarding",
+      "name": "Hebrew (RTL) · Onboarding"
+    },
+    {
+      "id": "he-app",
+      "name": "Hebrew (RTL) · App"
     }
   ],
   "artboards": [
@@ -17,61 +25,160 @@
       "y": 0,
       "w": 390,
       "h": 844,
-      "page": "en"
+      "page": "en-onboarding"
     },
     {
-      "file": "About.dc.html",
-      "title": "About · EN",
+      "file": "Language.dc.html",
+      "title": "Language · EN",
       "x": 540,
       "y": 0,
       "w": 390,
       "h": 844,
-      "page": "en"
+      "page": "en-onboarding"
     },
     {
-      "file": "Goals.dc.html",
-      "title": "Goals · EN",
+      "file": "About.dc.html",
+      "title": "About · EN",
       "x": 1020,
       "y": 0,
       "w": 390,
       "h": 844,
-      "page": "en"
+      "page": "en-onboarding"
     },
     {
-      "file": "Calculating.dc.html",
-      "title": "Calculating · EN",
+      "file": "Status.dc.html",
+      "title": "Status · EN",
       "x": 1500,
       "y": 0,
       "w": 390,
       "h": 844,
-      "page": "en"
+      "page": "en-onboarding"
     },
     {
-      "file": "Reveal.dc.html",
-      "title": "Reveal · EN",
+      "file": "Goals.dc.html",
+      "title": "Goals · EN",
       "x": 1980,
       "y": 0,
       "w": 390,
       "h": 844,
-      "page": "en"
+      "page": "en-onboarding"
+    },
+    {
+      "file": "Calculating.dc.html",
+      "title": "Calculating · EN",
+      "x": 60,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "page": "en-onboarding"
+    },
+    {
+      "file": "Reveal.dc.html",
+      "title": "Reveal · EN",
+      "x": 540,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "page": "en-onboarding"
+    },
+    {
+      "file": "Notifications.dc.html",
+      "title": "Notifications · EN",
+      "x": 1020,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "page": "en-onboarding"
     },
     {
       "file": "Main.dc.html",
       "title": "Home · EN",
-      "x": 2460,
+      "x": 60,
       "y": 0,
       "w": 390,
       "h": 844,
-      "page": "en"
+      "page": "en-app"
+    },
+    {
+      "file": "ChatList.dc.html",
+      "title": "Chat list · EN",
+      "x": 540,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "en-app"
     },
     {
       "file": "Chat.dc.html",
       "title": "Chat · EN",
-      "x": 2940,
+      "x": 1020,
       "y": 0,
       "w": 390,
       "h": 844,
-      "page": "en"
+      "page": "en-app"
+    },
+    {
+      "file": "Numbers.dc.html",
+      "title": "Numbers · EN",
+      "x": 1500,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "en-app"
+    },
+    {
+      "file": "CompatNew.dc.html",
+      "title": "Compatibility · new · EN",
+      "x": 1980,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "en-app"
+    },
+    {
+      "file": "CompatResult.dc.html",
+      "title": "Compatibility · result · EN",
+      "x": 60,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "page": "en-app"
+    },
+    {
+      "file": "Me.dc.html",
+      "title": "Me · EN",
+      "x": 540,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "page": "en-app"
+    },
+    {
+      "file": "Memory.dc.html",
+      "title": "What Eden remembers · EN",
+      "x": 1020,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "page": "en-app"
+    },
+    {
+      "file": "Archive.dc.html",
+      "title": "Quote archive · EN",
+      "x": 1500,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "page": "en-app"
+    },
+    {
+      "file": "Share.dc.html",
+      "title": "Share preview · EN",
+      "x": 1980,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "page": "en-app"
     },
     {
       "file": "SignInHE.dc.html",
@@ -80,61 +187,160 @@
       "y": 0,
       "w": 390,
       "h": 844,
-      "page": "he"
+      "page": "he-onboarding"
     },
     {
-      "file": "AboutHE.dc.html",
-      "title": "About · HE",
+      "file": "LanguageHE.dc.html",
+      "title": "Language · HE",
       "x": 540,
       "y": 0,
       "w": 390,
       "h": 844,
-      "page": "he"
+      "page": "he-onboarding"
     },
     {
-      "file": "GoalsHE.dc.html",
-      "title": "Goals · HE",
+      "file": "AboutHE.dc.html",
+      "title": "About · HE",
       "x": 1020,
       "y": 0,
       "w": 390,
       "h": 844,
-      "page": "he"
+      "page": "he-onboarding"
     },
     {
-      "file": "CalculatingHE.dc.html",
-      "title": "Calculating · HE",
+      "file": "StatusHE.dc.html",
+      "title": "Status · HE",
       "x": 1500,
       "y": 0,
       "w": 390,
       "h": 844,
-      "page": "he"
+      "page": "he-onboarding"
     },
     {
-      "file": "RevealHE.dc.html",
-      "title": "Reveal · HE",
+      "file": "GoalsHE.dc.html",
+      "title": "Goals · HE",
       "x": 1980,
       "y": 0,
       "w": 390,
       "h": 844,
-      "page": "he"
+      "page": "he-onboarding"
+    },
+    {
+      "file": "CalculatingHE.dc.html",
+      "title": "Calculating · HE",
+      "x": 60,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "page": "he-onboarding"
+    },
+    {
+      "file": "RevealHE.dc.html",
+      "title": "Reveal · HE",
+      "x": 540,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "page": "he-onboarding"
+    },
+    {
+      "file": "NotificationsHE.dc.html",
+      "title": "Notifications · HE",
+      "x": 1020,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "page": "he-onboarding"
     },
     {
       "file": "HomeHE.dc.html",
       "title": "Home · HE",
-      "x": 2460,
+      "x": 60,
       "y": 0,
       "w": 390,
       "h": 844,
-      "page": "he"
+      "page": "he-app"
+    },
+    {
+      "file": "ChatListHE.dc.html",
+      "title": "Chat list · HE",
+      "x": 540,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "he-app"
     },
     {
       "file": "ChatHE.dc.html",
       "title": "Chat · HE",
-      "x": 2940,
+      "x": 1020,
       "y": 0,
       "w": 390,
       "h": 844,
-      "page": "he"
+      "page": "he-app"
+    },
+    {
+      "file": "NumbersHE.dc.html",
+      "title": "Numbers · HE",
+      "x": 1500,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "he-app"
+    },
+    {
+      "file": "CompatNewHE.dc.html",
+      "title": "Compatibility · new · HE",
+      "x": 1980,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "he-app"
+    },
+    {
+      "file": "CompatResultHE.dc.html",
+      "title": "Compatibility · result · HE",
+      "x": 60,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "page": "he-app"
+    },
+    {
+      "file": "MeHE.dc.html",
+      "title": "Me · HE",
+      "x": 540,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "page": "he-app"
+    },
+    {
+      "file": "MemoryHE.dc.html",
+      "title": "What Eden remembers · HE",
+      "x": 1020,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "page": "he-app"
+    },
+    {
+      "file": "ArchiveHE.dc.html",
+      "title": "Quote archive · HE",
+      "x": 1500,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "page": "he-app"
+    },
+    {
+      "file": "ShareHE.dc.html",
+      "title": "Share preview · HE",
+      "x": 1980,
+      "y": 1000,
+      "w": 390,
+      "h": 844,
+      "page": "he-app"
     }
   ],
   "annotations": [
@@ -142,13 +348,13 @@
       "id": "direction",
       "x": 60,
       "y": -200,
-      "w": 520,
-      "page": "en",
-      "text": "Gan Eden — quiet luxury direction\nCream #FFF7F4 · rose-gold #8E5E4E→#E3B4B0 · display serif (Cormorant / Frank Ruhl Libre) · body Heebo\nPage 1 English, page 2 Hebrew (RTL) — switch from the pages menu. Real status bar / keyboard are not drawn."
+      "w": 560,
+      "page": "en-onboarding",
+      "text": "Gan Eden — quiet luxury direction\nCream #FFF7F4 · rose-gold #8E5E4E→#E3B4B0 · display serif (Cormorant / Frank Ruhl Libre) · body Heebo\nFour pages: English/Hebrew × Onboarding/App — switch from the pages menu. Real status bar / keyboard are not drawn."
     }
   ],
   "launch": {
     "view": "canvas",
-    "page": "en"
+    "page": "en-onboarding"
   }
 }

@@ -1,0 +1,11 @@
+{
+  "imports": {
+    "@gan-eden/prompts": "./_vendor/prompts/index.ts",
+    "@gan-eden/shared": "./_vendor/shared/index.ts",
+    "@gan-eden/numerology": "./_vendor/numerology/index.ts",
+    "zod": "npm:zod@^3.23.0",
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@2",
+    "@anthropic-ai/sdk": "npm:@anthropic-ai/sdk",
+    "@anthropic-ai/sdk/helpers/zod": "npm:@anthropic-ai/sdk/helpers/zod"
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "app": { "name": "גן עדן" },
+  "common": { "continue": "המשך", "back": "חזרה", "skip": "דלגי", "retry": "נסי שוב", "loadError": "משהו השתבש בטעינת הגן שלך." },
+  "auth": {
+    "title": "בחזרה לגן העדן הפנימי שלך",
+    "emailLabel": "האימייל שלך",
+    "sendCode": "שלחו לי קוד",
+    "codeLabel": "קוד בן 6 ספרות",
+    "verify": "אישור",
+    "sent": "שלחנו קוד ל־{{email}}"
+  },
+  "onboarding": {
+    "language": { "title": "באיזו שפה נדבר?", "he": "עברית", "en": "English" },
+    "about": {
+      "title": "נתחיל ממך",
+      "hint": "המספרים שלך נולדים מהשם המלא ומתאריך הלידה שלך",
+      "nameLabel": "שם מלא, כמו בתעודת הזהות",
+      "dobLabel": "תאריך לידה",
+      "dobInvalid": "נא להזין תאריך תקין, לפחות לפני 18 שנה"
+    },
+    "status": {
+      "title": "איפה את באהבה עכשיו?",
+      "single": "רווקה", "dating": "בדייטים", "relationship": "בזוגיות", "married": "נשואה"
+    },
+    "goals": {
+      "title": "בשביל מה הגעת?",
+      "subtitle": "בחרי כל מה שמדבר אלייך",
+      "find_partner": "למצוא את בן הזוג שלי",
+      "improve_relationship": "לשפר את הזוגיות שלי",
+      "grow_as_woman": "לצמוח כאישה",
+      "heal_past": "להחלים מהעבר",
+      "understand_numbers": "להבין את המספרים שלי",
+      "confidence": "ביטחון וערך עצמי"
+    },
+    "calculating": { "title": "קוראת את המספרים שלך…" },
+    "reveal": { "title": "המספרים שלך, {{name}}", "cta": "להיכנס לגן", "recompute": "לחשב מחדש את המספרים שלי" }
+  },
+  "numbers": {
+    "life_path": "מספר נתיב החיים", "expression": "מספר הביטוי", "soul_urge": "מספר הנשמה",
+    "personality": "מספר האישיות", "birthday": "מספר יום הלידה", "personalDay": "יום אישי {{n}}"
+  },
+  "tabs": { "home": "בית", "chat": "עדן", "numbers": "מספרים", "me": "אני" },
+  "me": { "signOut": "התנתקות", "language": "שפה", "memoryRow": "מה עדן זוכרת" },
+  "chat": {
+    "title": "עדן",
+    "new": "שיחה חדשה",
+    "empty": "התחילי שיחה עם עדן",
+    "composerPlaceholder": "כתבי הודעה לעדן…",
+    "send": "שליחה",
+    "capReached": "הגעת למכסת ההודעות של היום",
+    "capHint": "חזרי מחר לעוד זמן עם עדן",
+    "errorGeneric": "משהו השתבש. נסי שוב.",
+    "retry": "נסי שוב",
+    "partial": "(נקטע)",
+    "typing": "עדן מקלידה…",
+    "deleteChat": "מחיקת שיחה",
+    "askEden": "לשאול את עדן",
+    "askEdenHint": "עליו, עלייך, על היום"
+  },
+  "memory": {
+    "title": "זיכרון",
+    "empty": "עדן עוד לא זכרה כלום",
+    "delete": "מחיקה",
+    "hint": "מה שעדן זוכרת עלייך מכל השיחות",
+    "people": "אנשים",
+    "situations": "מצבים",
+    "preferences": "העדפות"
+  }
+}
